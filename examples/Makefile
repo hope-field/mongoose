@@ -4,10 +4,12 @@ all:
 	OS=`uname`; \
 	  test "$$OS" = Linux && LIBS="-ldl" ; \
 	  $(CC) $(CFLAGS) hello.c ../mongoose.c  $$LIBS $(ADD) -o hello;
-	  $(CC) $(CFLAGS) upload.c ../mongoose.c  $$LIBS $(ADD) -o upload;
-	  $(CC) $(CFLAGS) post.c ../mongoose.c  $$LIBS $(ADD) -o post;
-	  $(CC) $(CFLAGS) -DUSE_WEBSOCKET websocket.c ../mongoose.c  $$LIBS $(ADD) -o websocket;
-	  $(CC) $(CFLAGS) chat.c ../mongoose.c  $$LIBS $(ADD) -o chat
+	  $(CC) $(CFLAGS) upload.c ../mongoose.c -ldl $$LIBS $(ADD) -o upload;
+	  $(CC) $(CFLAGS) post.c ../mongoose.c  -ldl $$LIBS $(ADD) -o post;
+	  $(CC) $(CFLAGS) -DUSE_WEBSOCKET websocket.c ../mongoose.c  -ldl $$LIBS $(ADD) -o websocket;
+	  $(CC) $(CFLAGS) chat.c ../mongoose.c  -ldl $$LIBS $(ADD) -o chat
+tick:
+	  $(CC) $(CFLAGS) tick.cpp trader.cpp ../mongoose.c libs/thosttraderapi.so -ldl -Ilibs $$LIBS $(ADD) -o ticker
 
 
 MSVC    = e:/vc6
