@@ -300,8 +300,7 @@ public:
 	//银转功能
 	int ReqTransferByFuture(const char* bankID, const char* bankPWD, const char* accountPWD, double amount, bool f2B);
 public:
-	void ReqConnect(Ambrogio::Request& req, Ambrogio::Response& res);
-	void main_handler(Ambrogio::Request*	req, Ambrogio::Response* res);
+
 	bool	isReady() { return m_isready; }
 
 private:
@@ -313,10 +312,7 @@ private:
 	char*	frontAddr;
 	string	settleInfo;
 	char	tradingDay[128];
-	
-	Ambrogio::Request	*req;
-	Ambrogio::Response	*res;
-	
+
 	bool IsErrorRspInfo(CThostFtdcRspInfoField* pRspInfo);
 	void ReqLogin( );
 

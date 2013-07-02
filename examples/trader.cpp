@@ -301,7 +301,7 @@ void Trade::OnRspSettlementInfoConfirm(CThostFtdcSettlementInfoConfirmField* pSe
 	CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
 	m_isready = true;
-	main_handler(req, res);
+//	main_handler(req, res);
 }
 
 //²éºÏÔ¼
@@ -696,46 +696,6 @@ void Trade::ReqLogin( )
 	strcpy(req.Password, password);
 
 	pUserApi->ReqUserLogin(&req, ++iReqID);
-}
-
-void Trade::ReqConnect(Ambrogio::Request& req, Ambrogio::Response& res)
-{
-	strcpy(this->investor , req.remote_user().data());
-	pUserApi = CThostFtdcTraderApi::CreateFtdcTraderApi(investor);
-	pUserApi->RegisterSpi((CThostFtdcTraderSpi*)this);
-	pUserApi->SubscribePublicTopic(THOST_TERT_RESTART);
-	pUserApi->SubscribePrivateTopic(THOST_TERT_RESTART);
-
-	this->req = &req;
-	this->res = &res;
-	char* addr1 = new char[256];
-	
-	strcpy(this->password, req.remote_passwd().data());
-
-	strcpy(broker, "1001");
-
-	strcpy(addr1, "tcp://180.168.102.230:26205");
-
-	pUserApi->RegisterFront(addr1);
-	pUserApi->Init();
-
-	//Join();
-}
-
-void Trade::main_handler(Ambrogio::Request* req, Ambrogio::Response* res)
-{
-	Ambrogio::Router*	r = res->getRouter();	
-	if (this->req != req || this->res != res) {
-		delete this->req;
-		delete this->res;
-		this->req = req;
-		this->res = res;
-	}
-
-	if (r && req && res )
-		r->dispatch(*req, *res);
-
-	//Join();
 }
 
 bool Trade::IsErrorRspInfo(CThostFtdcRspInfoField* pRspInfo)
