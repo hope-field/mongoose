@@ -353,7 +353,7 @@ void Trade::OnRspQryTradingAccount(CThostFtdcTradingAccountField* pTradingAccoun
 	if(bIsLast)
 	{
 		if (!IsErrorRspInfo(pRspInfo) &&  pTradingAccount){
-				(*res)<<" 响应 | 权益:";
+				cerr<<" 响应 | 权益:";
 		}
   
 	}
@@ -703,7 +703,7 @@ bool Trade::IsErrorRspInfo(CThostFtdcRspInfoField* pRspInfo)
 		// 如果ErrorID != 0, 说明收到了错误的响应
 		bool bResult = ((pRspInfo) && (pRspInfo->ErrorID != 0));
 		if (bResult)
-		(*res)<< "--->>> ErrorID="
+		cerr<< "--->>> ErrorID="
 			<< ", ErrorMsg=" << pRspInfo->ErrorMsg;
 		return bResult;
 	}
