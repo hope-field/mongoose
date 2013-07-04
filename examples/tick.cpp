@@ -3,7 +3,7 @@
 #include "mongoose.h"
 
 // This function will be called by mongoose on every new request.
-static int begin_request_handler(struct mg_connection *conn) {
+static int tick_request_handler(struct mg_connection *conn) {
   const struct mg_request_info *request_info = mg_get_request_info(conn);
   char content[100];
 
@@ -35,7 +35,7 @@ int main(void) {
 
   // Prepare callbacks structure. We have only one callback, the rest are NULL.
   memset(&callbacks, 0, sizeof(callbacks));
-  callbacks.begin_request = begin_request_handler;
+  callbacks.begin_request = tick_request_handler;
 
   // Start the web server.
   ctx = mg_start(&callbacks, NULL, options);
