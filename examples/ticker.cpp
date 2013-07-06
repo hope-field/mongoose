@@ -31,7 +31,7 @@
 #include "mongoose.h"
 
 #if !defined(LISTENING_PORT)
-#define LISTENING_PORT "23456"
+#define LISTENING_PORT "24"
 #endif
 
 static const char *standard_reply = "HTTP/1.1 200 OK\r\n"
@@ -126,6 +126,23 @@ static void test_error(struct mg_connection *conn) {
 }
 
 static void test_post(struct mg_connection *conn ) {
+  const char *cl;
+  char *buf;
+  int len;
+
+  struct mg_request_info *ri = mg_get_request_info(conn);
+  mg_printf(conn, "%s", standard_reply);
+  if (strcmp(ri->request_method, "POST") == 0 &&
+      (cl = mg_get_header(conn, "Content-Length")) != NULL) {
+    len = atoi(cl);
+    if ((buf = (char*)malloc(len)) != NULL) {
+      mg_write(conn, buf, len);
+      free(buf);
+    }
+  }
+}
+
+static void get_account(struct mg_connection *conn ) {
   const char *cl;
   char *buf;
   int len;

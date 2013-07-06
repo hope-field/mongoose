@@ -1,51 +1,69 @@
-#include <stdio.h>
-#include <string.h>
-#include "mongoose.h"
+/**
+ *	$id$;
+ */
 
-// This function will be called by mongoose on every new request.
-static int begin_request_handler(struct mg_connection *conn) {
-  const struct mg_request_info *request_info = mg_get_request_info(conn);
-  char content[100];
+#include "tick.h"
 
-  // Prepare the message we're going to send
-  int content_length = snprintf(content, sizeof(content),
-                                "Hello from mongoose! Remote port: %d",
-                                request_info->remote_port);
-
-  // Send HTTP reply to the client
-  mg_printf(conn,
-            "HTTP/1.1 200 OK\r\n"
-            "Content-Type: text/plain\r\n"
-            "Content-Length: %d\r\n"        // Always set Content-Length
-            "\r\n"
-            "%s",
-            content_length, content);
-
-  // Returning non-zero tells mongoose that our function has replied to
-  // the client, and mongoose should not send client any more data.
-  return 1;
+Trade*	Tick::create_trader(char* f, char* b, char* u, char* p )
+{
+	Trade*		t = NULL;
+	Trades_it	it = m_traders.find(u);
+	
+	if(m_traders.end() == it) {
+		t = new Trade();
+		if (NULL != t)
+			t->ReqConnect(f, b, u, p);
+		m_traders.insert(pair<string, Trade*>(u, t));
+	} else {
+		t = it->second;
+	}
+	return t;
 }
 
-int main(void) {
-  struct mg_context *ctx;
-  struct mg_callbacks callbacks;
+int	Tick::remove_trader(string ukey)
+{
+	int ret = 0;
+	Trades_it it = m_traders.find(ukey);
+	if(it != m_traders.end()) {
+		m_traders.erase(ukey);
 
-  // List of options. Last element must be NULL.
-  const char *options[] = {"listening_ports", "24", NULL};
+		ret = 1;
+	}
 
-  // Prepare callbacks structure. We have only one callback, the rest are NULL.
-  memset(&callbacks, 0, sizeof(callbacks));
-  callbacks.begin_request = begin_request_handler;
+	return ret;
+}
 
-  // Start the web server.
-  ctx = mg_start(&callbacks, NULL, options);
+void Tick::show_traders ()
+{
+	for(Trades_it it = m_traders.begin(); it != m_traders.end(); it++ ) {
+	}
+}
 
-  // Wait until user hits "enter". Server is running in separate thread.
-  // Navigating to http://localhost:8080 will invoke begin_request_handler().
-  getchar();
+Trade*	Tick::find_trader(string ukey)
+{
+	Trade	*t = NULL;
+	Trades_it it = m_traders.find(ukey);
+	
+	if(it != m_traders.end()) t = it->second;
+/*	for(Trades_it	it = m_traders.begin(); it != m_traders.end(); ++it) {
+		if(!strcmp(id, it->first)) {
+			t = it->second;
+			break;
+		}
+	}
+*/
+	return t;
+}	
 
-  // Stop the server.
-  mg_stop(ctx);
+Tick::Tick()
+{
+}
 
-  return 0;
+Tick::~Tick()
+{
+	for(Trades_it	it = m_traders.begin(); it != m_traders.end(); ++it) {
+		Trade*	t = it->second;
+		m_traders.erase(it->first);
+		delete	t;
+	}
 }
