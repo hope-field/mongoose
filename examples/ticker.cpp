@@ -29,6 +29,7 @@
 #endif
 
 #include "mongoose.h"
+#include "trader.h"
 
 #if !defined(LISTENING_PORT)
 #define LISTENING_PORT "24"
@@ -173,15 +174,29 @@ static const struct ticker_config {
 };
 
 static int ticker_request_handler(struct mg_connection *conn) {
-  const struct mg_request_info *request_info = mg_get_request_info(conn);
+  char post_data[1024], user[sizeof(post_data)], password[sizeof(post_data)];
+  int post_data_len;
   int i;
+  const struct mg_request_info *request_info = mg_get_request_info(conn);
+  // User has submitted a form, show submitted data and a variable value
+  post_data_len = mg_read(conn, post_data, sizeof(post_data));
 
-  for (i = 0; ticker_config[i].uri != NULL; i++) {
-    if (!strcmp(request_info->request_method, ticker_config[i].method) &&
-         !strcmp(request_info->uri, ticker_config[i].uri)) {
-      ticker_config[i].func(conn);
-      return 1;
-    }
+  // Parse form data. input1 and input2 are guaranteed to be NUL-terminated
+  mg_get_var(post_data, post_data_len, "user", user, sizeof(user));
+  mg_get_var(post_data, post_data_len, "password", password, sizeof(password));
+  
+  
+  if (!request_info->is_ssl) {
+  	
+  }
+  else {
+	  for (i = 0; ticker_config[i].uri != NULL; i++) {
+	    if (!strcmp(request_info->request_method, ticker_config[i].method) &&
+	         !strcmp(request_info->uri, ticker_config[i].uri)) {
+	      ticker_config[i].func(conn);
+	      return 1;
+	    }
+	  }  	
   }
 
   return 0;

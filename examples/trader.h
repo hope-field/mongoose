@@ -36,6 +36,7 @@ public:
 	{
 		if(pUserApi)
 			pUserApi->Release();
+		pUserApi = NULL;
 	}
 
 	///当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
@@ -274,6 +275,7 @@ public:
 	char* broker, *investor;
 	int orderRef;
 	char	buffer[1024];
+	volatile	int	status;
 	
 	CThostFtdcTraderApi* pUserApi;
 
