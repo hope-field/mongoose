@@ -24,6 +24,8 @@ public:
 		orderRef = 0;
 		m_isready = false;
 
+        status = 0;
+		isdone = 0
 		investor = new char[32];
 		password = new char[64];
 		broker = new char[32];
@@ -276,6 +278,7 @@ public:
 	int orderRef;
 	char	buffer[1024];
 	volatile	int	status;
+	volatile	int isdone;
 	
 	CThostFtdcTraderApi* pUserApi;
 

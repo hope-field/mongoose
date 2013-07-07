@@ -6,7 +6,7 @@
 #include <hash_map>
 //#include <hash_set>
 
-#include "trade.h"
+#include "trader.h"
 
 using namespace std;
 

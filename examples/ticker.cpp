@@ -29,11 +29,13 @@
 #endif
 
 #include "mongoose.h"
-#include "trader.h"
+#include "tick.h"
 
 #if !defined(LISTENING_PORT)
 #define LISTENING_PORT "24"
 #endif
+
+static tick tick_server;
 
 static const char *standard_reply = "HTTP/1.1 200 OK\r\n"
   "Content-Type: text/plain\r\n"
@@ -143,33 +145,16 @@ static void test_post(struct mg_connection *conn ) {
   }
 }
 
-static void get_account(struct mg_connection *conn ) {
-  const char *cl;
-  char *buf;
-  int len;
-
-  struct mg_request_info *ri = mg_get_request_info(conn);
-  mg_printf(conn, "%s", standard_reply);
-  if (strcmp(ri->request_method, "POST") == 0 &&
-      (cl = mg_get_header(conn, "Content-Length")) != NULL) {
-    len = atoi(cl);
-    if ((buf = (char*)malloc(len)) != NULL) {
-      mg_write(conn, buf, len);
-      free(buf);
-    }
-  }
+static void get_account_info(struct mg_connection *conn, Trade* t) {
+	t->ReqQryTradingAccount();
 }
 
 static const struct ticker_config {
   const char *method;
   const char *uri;
-  void (*func)(struct mg_connection * );
+  void (*func)(struct mg_connection * , Trade*);
 } ticker_config[] = {
-  {"GET", "/test_get_header", &test_get_header},
-  {"GET", "/test_get_var", &test_get_var},
-  {"GET", "/test_get_request_info", &test_get_request_info},
-  {"GET", "/test_post", &test_post},
-  {"GET", "", &test_error},
+  {"GET", "/get_account", &get_account_info},
   {NULL, NULL, NULL}
 };
 
@@ -177,6 +162,8 @@ static int ticker_request_handler(struct mg_connection *conn) {
   char post_data[1024], user[sizeof(post_data)], password[sizeof(post_data)];
   int post_data_len;
   int i;
+  Trade* trader = NULL;
+  char	*f = "tcp://180.168.102.230:26205", *b = "1001";
   const struct mg_request_info *request_info = mg_get_request_info(conn);
   // User has submitted a form, show submitted data and a variable value
   post_data_len = mg_read(conn, post_data, sizeof(post_data));
@@ -185,21 +172,30 @@ static int ticker_request_handler(struct mg_connection *conn) {
   mg_get_var(post_data, post_data_len, "user", user, sizeof(user));
   mg_get_var(post_data, post_data_len, "password", password, sizeof(password));
   
+  trader = tick_server.create_tracer(f, b, user, password);
   
-  if (!request_info->is_ssl) {
-  	
-  }
-  else {
+  if(!trader) return 0;
+  
+  trader->isdone = 0;
+  memset(trader->buffer, 0, sizeof(trader->buffer));
+  
+  while(trader->status < 2) {}
+ 
+  {
 	  for (i = 0; ticker_config[i].uri != NULL; i++) {
 	    if (!strcmp(request_info->request_method, ticker_config[i].method) &&
 	         !strcmp(request_info->uri, ticker_config[i].uri)) {
-	      ticker_config[i].func(conn);
-	      return 1;
+	      ticker_config[i].func(conn, trader);
+	      break;
 	    }
-	  }  	
+	  }
+	  
+	  while (!trader->isdone){}
+	  
+	  mg_write(conn, trader->buffer, strlen(buffer));
   }
 
-  return 0;
+  return 1;
 }
 
 int main(void) {

@@ -9,7 +9,7 @@ all:
 	  $(CC) $(CFLAGS) -DUSE_WEBSOCKET websocket.c ../mongoose.c  -ldl $$LIBS $(ADD) -o websocket;
 	  $(CC) $(CFLAGS) chat.c ../mongoose.c  -ldl $$LIBS $(ADD) -o chat
 ticker:
-	  $(CC) $(CFLAGS) ticker.cpp trader.cpp ../mongoose.c libs/thosttraderapi.so -lstdc++ -ldl -Ilibs $$LIBS $(ADD) -o ticker
+	  $(CC) $(CFLAGS) ticker.cpp tick.cpp trader.cpp ../mongoose.c libs/thosttraderapi.so -lstdc++ -ldl -Ilibs $$LIBS $(ADD) -o ticker
 
 
 MSVC    = e:/vc6
