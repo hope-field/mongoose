@@ -147,6 +147,7 @@ static void test_post(struct mg_connection *conn ) {
 
 static void get_account_info(struct mg_connection *conn, Trade* t) {
 	t->ReqQryTradingAccount();
+	cerr<<"@"<<__FUNCTION__<<endl;
 }
 
 static const struct ticker_config {
@@ -163,7 +164,8 @@ static int ticker_request_handler(struct mg_connection *conn) {
   int post_data_len;
   int i;
   Trade* trader = NULL;
-  char	*f = "tcp://180.168.102.230:26205", *b = "1001";
+  char	*f = "tcp://27.17.62.149:40205", *b = "1035";
+  char	*u = "00000072", *p = "123456";
   const struct mg_request_info *request_info = mg_get_request_info(conn);
   // User has submitted a form, show submitted data and a variable value
   post_data_len = mg_read(conn, post_data, sizeof(post_data));
@@ -172,7 +174,7 @@ static int ticker_request_handler(struct mg_connection *conn) {
   mg_get_var(post_data, post_data_len, "user", user, sizeof(user));
   mg_get_var(post_data, post_data_len, "password", password, sizeof(password));
   
-  trader = tick_server.create_trader(f, b, user, password);
+  trader = tick_server.create_trader(f, b, u, p);
   
   if(!trader) return 0;
   
@@ -189,8 +191,9 @@ static int ticker_request_handler(struct mg_connection *conn) {
 	      break;
 	    }
 	  }
-	  
+	 cerr<<"@1"<<endl; 
 	  while (!trader->isdone){}
+	 cerr<<"@2"<<endl; 
 	  
 	  mg_write(conn, trader->buffer, strlen(trader->buffer));
   }

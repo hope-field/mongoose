@@ -31,7 +31,7 @@ int main(void) {
   struct mg_callbacks callbacks;
 
   // List of options. Last element must be NULL.
-  const char *options[] = {"listening_ports", "8080", NULL};
+  const char *options[] = {"listening_ports", "24", NULL};
 
   // Prepare callbacks structure. We have only one callback, the rest are NULL.
   memset(&callbacks, 0, sizeof(callbacks));

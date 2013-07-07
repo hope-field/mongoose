@@ -206,6 +206,7 @@ int Trade::ReqTransferByFuture(const char* bankID, const char* bankPWD, const ch
 void Trade::OnFrontConnected()
 {
 	ReqLogin();
+	cerr<<__FUNCTION__<<endl;
 //	state = state_after_connect;
 }
 
@@ -241,7 +242,9 @@ void Trade::OnRspUserLogin(CThostFtdcRspUserLoginField* pRspUserLogin,
 		memset(&req, 0, sizeof(req));
 		strcpy(req.BrokerID, broker);
 		strcpy(req.InvestorID, investor);
-		int ret = pUserApi->ReqQrySettlementInfoConfirm(&req, ++iReqID);
+	        cerr<<__FUNCTION__<<endl;
+		status = 3;
+//		int ret = pUserApi->ReqQrySettlementInfoConfirm(&req, ++iReqID);
 	}
 }
 
@@ -354,10 +357,10 @@ void Trade::OnRspQryTradingAccount(CThostFtdcTradingAccountField* pTradingAccoun
 	{
 		if (!IsErrorRspInfo(pRspInfo) &&  pTradingAccount){
 				strcpy(buffer ," 响应 | 权益:");
-				isdone = 1;
 		}
-  
 	}
+	cerr<<"@"<<__FUNCTION__<<endl;
+ 	isdone = 1;
 }
 
 //报单响应
@@ -714,7 +717,7 @@ void Trade::ReqConnect(char* f, const char* b, const char* u, char* p)
 
 	pUserApi->RegisterFront(f);
 	pUserApi->Init();
-
+	fprintf(stderr, "@%s\n", __FUNCTION__);
 }
 
 bool Trade::IsErrorRspInfo(CThostFtdcRspInfoField* pRspInfo)

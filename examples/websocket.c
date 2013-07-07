@@ -51,7 +51,7 @@ int main(void) {
   struct mg_context *ctx;
   struct mg_callbacks callbacks;
   const char *options[] = {
-    "listening_ports", "8080",
+    "listening_ports", "24",
     "document_root", "websocket_html_root",
     NULL
   };
