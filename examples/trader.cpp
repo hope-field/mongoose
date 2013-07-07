@@ -140,7 +140,8 @@ int Trade::ReqQryTradingAccount()
 	strcpy(f.BrokerID, broker);
 	strcpy(f.InvestorID, investor);
 	do {
-		ret =  pUserApi->ReqQryTradingAccount(&f, ++iReqID);		
+		ret =  pUserApi->ReqQryTradingAccount(&f, ++iReqID);
+		//sleep (500);		
 	} while (3 == ret);
 
 	return ret;
@@ -149,7 +150,6 @@ int Trade::ReqQryTradingAccount()
 //查签约银行
 int Trade::ReqQryAccountregister()
 {
-
 	CThostFtdcQryAccountregisterField f;
 	memset(&f, 0, sizeof(f));
 	strcpy(f.BrokerID, broker);
@@ -207,6 +207,7 @@ void Trade::OnFrontConnected()
 {
 	ReqLogin();
 	cerr<<"@"<<__FUNCTION__<<endl;
+	status = 1;
 //	state = state_after_connect;
 }
 
@@ -214,6 +215,7 @@ void Trade::OnFrontConnected()
 void Trade::OnFrontDisconnected(int nReason)
 {
 	cerr<<"响应|交易断开!"<<nReason<<endl;
+	status = 0;
 }
 
 //心跳
@@ -348,6 +350,9 @@ void Trade::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField* pInvestorP
 void Trade::OnRspQryInvestorPositionDetail(CThostFtdcInvestorPositionDetailField* pInvestorPositionDetail,
 	CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
+	if (bIsLast) {
+		isdone = 1;
+	}
 }
 
 //查资金
@@ -373,6 +378,7 @@ void Trade::OnRspQryTradingAccount(CThostFtdcTradingAccountField* pTradingAccoun
 //报单响应
 void Trade::OnRtnOrder(CThostFtdcOrderField* pOrder)
 {
+	isdone = 1;
 }
 
 //成交响应
@@ -384,6 +390,9 @@ void Trade::OnRtnTrade(CThostFtdcTradeField* pTrade)
 //报单错误
 void Trade::OnRspOrderInsert(CThostFtdcInputOrderField* pInputOrder, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
+	if (bIsLast) {
+		isdone = 1;
+	}
 	//show(pRspInfo->ErrorMsg, 2);
 }
 
@@ -391,12 +400,14 @@ void Trade::OnRspOrderInsert(CThostFtdcInputOrderField* pInputOrder, CThostFtdcR
 void Trade::OnErrRtnOrderInsert(CThostFtdcInputOrderField* pInputOrder, CThostFtdcRspInfoField* pRspInfo)
 {
 	//show(pRspInfo->ErrorMsg, 2);
+	isdone = 1;
 }
 
 //撤单错误
 void Trade::OnRspOrderAction(CThostFtdcInputOrderActionField* pInputOrderAction, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
 	//show(pRspInfo->ErrorMsg, 2);
+	isdone = 1;
 }
 
 //签约银行
@@ -496,6 +507,7 @@ void Trade::OnRspFromBankToFutureByFuture(CThostFtdcReqTransferField* pReqTransf
 void Trade::OnRspUserLogout(CThostFtdcUserLogoutField* pUserLogout, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
 	cerr<<"logout+"<<pUserLogout->UserID<<endl;
+	status = 1;
 }
 
 void Trade::OnRspUserPasswordUpdate(CThostFtdcUserPasswordUpdateField* pUserPasswordUpdate, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
@@ -528,14 +540,23 @@ void Trade::OnRspRemoveParkedOrderAction(CThostFtdcRemoveParkedOrderActionField*
 
 void Trade::OnRspQryOrder(CThostFtdcOrderField* pOrder, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
+	if (bIsLast) {
+		isdone = 1;	
+	}
 }
 
 void Trade::OnRspQryTrade(CThostFtdcTradeField* pTrade, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
+	if (bIsLast) {
+		isdone = 1;	
+	}
 }
 
 void Trade::OnRspQryInvestor(CThostFtdcInvestorField* pInvestor, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
+	if (bIsLast) {
+		isdone = 1;	
+	}
 }
 
 void Trade::OnRspQryTradingCode(CThostFtdcTradingCodeField* pTradingCode, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
