@@ -192,7 +192,7 @@ static int ticker_request_handler(struct mg_connection *conn) {
 	  
 	  while (!trader->isdone){}
 	  
-	  mg_write(conn, trader->buffer, strlen(buffer));
+	  mg_write(conn, trader->buffer, strlen(trader->buffer));
   }
 
   return 1;

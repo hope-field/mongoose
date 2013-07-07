@@ -276,7 +276,7 @@ public:
 	int iReqID;
 	char* broker, *investor;
 	int orderRef;
-	char	buffer[1024];
+	char		buffer[1024];
 	volatile	int	status;
 	volatile	int isdone;
 	
