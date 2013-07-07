@@ -1,4 +1,4 @@
-CFLAGS=	-W -Wall -I.. -pthread -g 
+CFLAGS=	-W -Wall -Wno-unused-parameter -I.. -pthread -g 
 
 all:
 	OS=`uname`; \

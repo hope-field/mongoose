@@ -356,14 +356,14 @@ void Trade::OnRspQryTradingAccount(CThostFtdcTradingAccountField* pTradingAccoun
 	if(bIsLast)
 	{
 		if (!IsErrorRspInfo(pRspInfo) &&  pTradingAccount){
-				strcpy(buffer ," 响应 | 权益:%f %s",pTradingAccount->Balance
-				," 可用:%g %s"<<pTradingAccount->Available   
-				," 保证金:%g %s"<<pTradingAccount->CurrMargin
-				," 平仓盈亏:%g %s"<<pTradingAccount->CloseProfit
-				," 持仓盈亏:%g %s"<<pTradingAccount->PositionProfit
-				," 手续费:%g %s"<<pTradingAccount->Commission
-				," 冻结保证金:%g %s"<<pTradingAccount->FrozenMargin
-				," 冻结手续费:%g"<<pTradingAccount->FrozenCommission);
+				sprintf(buffer ," 响应 | 权益:%f %s",pTradingAccount->Balance
+				," 可用:%g %s",pTradingAccount->Available   
+				," 保证金:%g %s",pTradingAccount->CurrMargin
+				," 平仓盈亏:%g %s",pTradingAccount->CloseProfit
+				," 持仓盈亏:%g %s",pTradingAccount->PositionProfit
+				," 手续费:%g %s", pTradingAccount->Commission
+				," 冻结保证金:%g %s",pTradingAccount->FrozenMargin
+				," 冻结手续费:%g",pTradingAccount->FrozenCommission);
 		}
 	}
 	cerr<<"@"<<__FUNCTION__<<endl;
