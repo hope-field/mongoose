@@ -272,7 +272,7 @@ void Trade::OnRspQrySettlementInfoConfirm(CThostFtdcSettlementInfoConfirmField* 
 			memset(&f, 0, sizeof(f));
 			strcpy(f.BrokerID, broker);
 			strcpy(f.InvestorID, investor);
-			m_isready = true;
+			status = 3;
 			ret = pUserApi->ReqQrySettlementInfo(&f, ++iReqID);
 		}
 	}
@@ -300,7 +300,7 @@ void Trade::OnRspQrySettlementInfo(CThostFtdcSettlementInfoField* pSettlementInf
 void Trade::OnRspSettlementInfoConfirm(CThostFtdcSettlementInfoConfirmField* pSettlementInfoConfirm,
 	CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
-	m_isready = true;
+	status = 3;
 //	main_handler(req, res);
 }
 
