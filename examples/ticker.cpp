@@ -35,7 +35,7 @@
 #define LISTENING_PORT "24"
 #endif
 
-static class Tick tick_server;
+static Tick tick_server;
 
 static const char *standard_reply = "HTTP/1.1 200 OK\r\n"
   "Content-Type: text/plain\r\n"

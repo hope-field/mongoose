@@ -353,7 +353,7 @@ void Trade::OnRspQryTradingAccount(CThostFtdcTradingAccountField* pTradingAccoun
 	if(bIsLast)
 	{
 		if (!IsErrorRspInfo(pRspInfo) &&  pTradingAccount){
-				buffer = " 响应 | 权益:";
+				strcpy(buffer ," 响应 | 权益:");
 				isdone = 1;
 		}
   
