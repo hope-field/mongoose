@@ -29,6 +29,7 @@
 #endif
 
 #include "mongoose.h"
+#include "cJSON.h"
 #include "tick.h"
 
 #if !defined(LISTENING_PORT)
@@ -264,20 +265,32 @@ static int ticker_wb_data_handler(struct mg_connection *conn, int flags,
                                   char *data, size_t data_len) {
   unsigned char reply[200];
   size_t i;
-
+  const struct mg_request_info *ri = mg_get_request_info(conn);
+  Trade *t = tick_server.find_trader(ri->remote_user);
   (void) flags;
-
-  printf("rcv: [%.*s]\n", (int) data_len, data);
 
   // Truncate echoed message, to simplify output code.
   if (data_len > 125) {
     data_len = 125;
   }
 
+  cJSON *root = cJSON_Parse(data);
+  cJSON *parameter = cJSON_GetObjectItem(root, "parameter");
+  int api = cJSON_GetObjectItem(root, "api")->valueint;
   // Prepare frame
   reply[0] = 0x81;  // text, FIN set
   reply[1] = data_len;
 
+  switch (api) {
+	  case 1:
+	  	get_acount_info(conn, t);
+	  	break;
+	  case 2:
+	  	get_position_info(conn, t);
+	  	break;
+	  default:
+	  break;
+  }
   // Copy message from request to reply, applying the mask if required.
   for (i = 0; i < data_len; i++) {
     reply[i + 2] = data[i];

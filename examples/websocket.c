@@ -5,6 +5,30 @@
 #include <string.h>
 #include "mongoose.h"
 
+// This function will be called by mongoose on every new request.
+static int begin_request_handler(struct mg_connection *conn) {
+  const struct mg_request_info *request_info = mg_get_request_info(conn);
+  char content[100];
+
+  // Prepare the message we're going to send
+  int content_length = snprintf(content, sizeof(content),
+                                "Hello from mongoose! Remote port: %d",
+                                request_info->remote_port);
+
+  // Send HTTP reply to the client
+  mg_printf(conn,
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/plain\r\n"
+            "Content-Length: %d\r\n"        // Always set Content-Length
+            "\r\n"
+            "%s",
+            content_length, content);
+
+  // Returning non-zero tells mongoose that our function has replied to
+  // the client, and mongoose should not send client any more data.
+  return 1;
+}
+
 static void websocket_ready_handler(struct mg_connection *conn) {
   unsigned char buf[40];
   buf[0] = 0x81;
@@ -57,6 +81,8 @@ int main(void) {
   };
 
   memset(&callbacks, 0, sizeof(callbacks));
+   
+  callbacks.begin_request = begin_request_handler;
   callbacks.websocket_ready = websocket_ready_handler;
   callbacks.websocket_data = websocket_data_handler;
   ctx = mg_start(&callbacks, NULL, options);
