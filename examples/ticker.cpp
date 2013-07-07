@@ -156,7 +156,7 @@ static void get_position_info(struct mg_connection *conn, Trade *t) {
 
 static void post_order_insert(struct mg_connection *conn, Trade *t) {
 	char instrument[16], _price[16], _director[16], _offset[16], _volume[16];
-	double price, int director, int offset, int volume;
+	double price; int director; int offset; int volume;
 	char post_data[1024];int post_data_len;
 	const struct mg_request_info *ri = mg_get_request_info(conn);
 	
@@ -178,7 +178,7 @@ static void post_order_insert(struct mg_connection *conn, Trade *t) {
 
 static void del_order_action(struct mg_connection *conn, Trade* t) {
 	char instrument[16], _session[16], _frontid[16], orderref[16];
-	int session, int frontid;
+	int session; int frontid;
 	char post_data[1024];int post_data_len;
 	const struct mg_request_info *ri = mg_get_request_info(conn);
 	
