@@ -150,12 +150,60 @@ static void get_account_info(struct mg_connection *conn, Trade* t) {
 	cerr<<"@"<<__FUNCTION__<<endl;
 }
 
+static void get_position_info(struct mg_connection *conn, Trade *t) {
+	t->ReqQryInvestorPosition();
+}
+
+static void post_order_insert(struct mg_connection *conn, Trade *t) {
+	char instrument[16], _price[16], _director[16], _offset[16], _volume[16];
+	double price, int director, int offset, int volume;
+	char post_data[1024];int post_data_len;
+	const struct mg_request_info *ri = mg_get_request_info(conn);
+	
+	post_data_len = mg_read(conn, post_data, sizeof(post_data));
+	
+	mg_get_var(post_data, post_data_len, "instrument", instrument, sizeof(instrument));
+	mg_get_var(post_data, post_data_len, "price", _price, sizeof(_price));
+	mg_get_var(post_data, post_data_len, "director", _director, sizeof(_director));
+	mg_get_var(post_data, post_data_len, "offset", _offset, sizeof(_offset));
+	mg_get_var(post_data, post_data_len, "volume", _volume, sizeof(_volume));
+	
+	price = atof(_price);
+	director = atoi(_director);
+	offset = atoi(_offset);
+	volume = atoi(_volume);
+	
+	t->ReqOrderInsert(instrument, price, director, offset, volume);
+}
+
+static void del_order_action(struct mg_connection *conn, Trade* t) {
+	char instrument[16], _session[16], _frontid[16], orderref[16];
+	int session, int frontid;
+	char post_data[1024];int post_data_len;
+	const struct mg_request_info *ri = mg_get_request_info(conn);
+	
+	post_data_len = mg_read(conn, post_data, sizeof(post_data));
+	
+	mg_get_var(post_data, post_data_len, "instrument", instrument, sizeof(instrument));
+	mg_get_var(post_data, post_data_len, "session", _session, sizeof(_session));
+	mg_get_var(post_data, post_data_len, "frontid", _frontid, sizeof(_frontid));
+	mg_get_var(post_data, post_data_len, "orderref", orderref, sizeof(orderref));
+	
+	session = atoi(_session);
+	frontid = atoi(_frontid);
+	
+	t->ReqOrderAction(instrument, session, frontid, orderref);
+}
+
 static const struct ticker_config {
   const char *method;
   const char *uri;
   void (*func)(struct mg_connection * , Trade*);
 } ticker_config[] = {
   {"GET", "/get_account", &get_account_info},
+  {"GET", "/get_position", &get_position_info},
+  {"POST", "/order_insert", &post_order_insert},
+  {"DELETE", "/del_order_action", &del_order_action},
   {NULL, NULL, NULL}
 };
 

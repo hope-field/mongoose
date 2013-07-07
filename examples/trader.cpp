@@ -206,7 +206,7 @@ int Trade::ReqTransferByFuture(const char* bankID, const char* bankPWD, const ch
 void Trade::OnFrontConnected()
 {
 	ReqLogin();
-	cerr<<__FUNCTION__<<endl;
+	cerr<<"@"<<__FUNCTION__<<endl;
 //	state = state_after_connect;
 }
 
@@ -340,6 +340,7 @@ void Trade::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField* pInvestorP
 
 	if(bIsLast)
 	{
+		isdone = 1;
 	}
 }
 
@@ -365,9 +366,8 @@ void Trade::OnRspQryTradingAccount(CThostFtdcTradingAccountField* pTradingAccoun
 				," 冻结保证金:%g %s",pTradingAccount->FrozenMargin
 				," 冻结手续费:%g",pTradingAccount->FrozenCommission);
 		}
+		isdone = 1;
 	}
-	cerr<<"@"<<__FUNCTION__<<endl;
- 	isdone = 1;
 }
 
 //报单响应
