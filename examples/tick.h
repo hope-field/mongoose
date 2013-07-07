@@ -32,7 +32,7 @@ public:
 	~Tick();
 
 	Trade*	create_trader(char*, char*, char*, char*);
-	int	remove_trader(string);
+	int		remove_trader(string);
 	void	show_traders();
 	Trade*	find_trader(string);
 public:

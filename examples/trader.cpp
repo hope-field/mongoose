@@ -699,6 +699,24 @@ void Trade::ReqLogin( )
 	pUserApi->ReqUserLogin(&req, ++iReqID);
 }
 
+void Trade::ReqConnect(char* f, const char* b, const char* u, char* p)
+{
+	pUserApi = CThostFtdcTraderApi::CreateFtdcTraderApi(u);
+	pUserApi->RegisterSpi((CThostFtdcTraderSpi*)this);
+	pUserApi->SubscribePublicTopic(THOST_TERT_RESTART);
+	pUserApi->SubscribePrivateTopic(THOST_TERT_RESTART);
+
+	//this->addrID = frontID;
+	//char* addr1 = new char[256];
+	strcpy(broker, b);
+	strcpy(investor, u);
+	strcpy(password, p);
+
+	pUserApi->RegisterFront(f);
+	pUserApi->Init();
+
+}
+
 bool Trade::IsErrorRspInfo(CThostFtdcRspInfoField* pRspInfo)
 	{
 		// 如果ErrorID != 0, 说明收到了错误的响应
