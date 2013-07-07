@@ -172,7 +172,7 @@ static int ticker_request_handler(struct mg_connection *conn) {
   mg_get_var(post_data, post_data_len, "user", user, sizeof(user));
   mg_get_var(post_data, post_data_len, "password", password, sizeof(password));
   
-  trader = tick_server.create_tracer(f, b, user, password);
+  trader = tick_server.create_trader(f, b, user, password);
   
   if(!trader) return 0;
   
