@@ -85,7 +85,7 @@ traderproxy::traderproxy()
 traderproxy::~traderproxy()
 {
 	for(Trades_it	it = m_traders.begin(); it != m_traders.end(); ++it) {
-		erase(it->first);
+		m_traders.erase(it->first);
 		delete	t;
 	}
 }
@@ -105,7 +105,7 @@ Trade* traderproxy::create_trader(struct mg_connection* conn) {
     mg_get_var(post_data, post_data_len, "user", user, sizeof(user));
     mg_get_var(post_data, post_data_len, "password", password, sizeof(password));
   
-    trader = new Trader();
+    trader = new Trade();
 	if (!trader) return NULL;
 	
 	trader->ReqConnect(f, b, u, p);
@@ -113,6 +113,6 @@ Trade* traderproxy::create_trader(struct mg_connection* conn) {
 	m_traders->insert(pair<string, Trade*>(u, trader));
 //	insert(pair<struct mg_connection*, Trades_t*>(conn, it));
 	
-	return trader
+	return trader;
   //  trader = tick_server.create_trader(f, b, u, p);
 }
