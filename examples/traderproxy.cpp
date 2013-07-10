@@ -76,7 +76,7 @@ string&	traderproxy::get_user_from_conn(struct mg_connection*) {
     mg_get_var(post_data, post_data_len, "password", password, sizeof(password));
   
 	string ukey = u;
-  	return string(u);
+  	return ukey;
 }
 
 traderproxy::traderproxy()
@@ -87,7 +87,7 @@ traderproxy::~traderproxy()
 {
 	for(Trades_it	it = m_traders.begin(); it != m_traders.end(); ++it) {
 		m_traders.erase(it->first);
-//		delete	t;
+			delete	t->second;
 	}
 }
 

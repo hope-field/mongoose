@@ -278,7 +278,7 @@ static int ticker_wb_data_handler(struct mg_connection *conn, int flags,
 
   switch (api) {
 	  case 1:
-	  	get_acount_info(conn, t);
+	  	get_account_info(conn, t);
 	  	break;
 	  case 2:
 	  	get_position_info(conn, t);
