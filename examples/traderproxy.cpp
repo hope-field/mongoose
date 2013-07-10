@@ -25,9 +25,11 @@ Trade*	traderproxy::create_trader(struct mg_connection* conn)
 }
 */
 
-int	traderproxy::remove_trader(string ukey)
+int	traderproxy::remove_trader(struct mg_connection* conn)
 {
 	int ret = 0;
+	string &ukey = get_user_from_conn(conn);
+	
 	Trades_it it = m_traders.find(ukey);
 	
 	if(it != m_traders.end()) {

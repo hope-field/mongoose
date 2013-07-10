@@ -261,7 +261,7 @@ static int ticker_wb_data_handler(struct mg_connection *conn, int flags,
   unsigned char reply[200];
   size_t i;
   const struct mg_request_info *ri = mg_get_request_info(conn);
-  Trade *t = tick_server.find(conn);
+  Trade *t = tick_server.find_trader(conn);
   (void) flags;
 
   // Truncate echoed message, to simplify output code.
