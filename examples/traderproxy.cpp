@@ -28,7 +28,8 @@ Trade*	traderproxy::create_trader(struct mg_connection* conn)
 int	traderproxy::remove_trader(struct mg_connection* conn)
 {
 	int ret = 0;
-	string &ukey = get_user_from_conn(conn);
+	char	ukey[32];
+        int u_len = get_post_var(conn, "user", ukey, sizeof(ukey));
 	
 	Trades_it it = m_traders.find(ukey);
 	
@@ -52,7 +53,8 @@ void traderproxy::show_traders ()
 Trade*	traderproxy::find_trader(struct mg_connection *conn)
 {
 	Trade	*t = NULL;
-	string	&ukey = get_user_from_conn(conn);
+	char	ukey[32] ;
+        int u_len = get_post_var(conn, "user", ukey, sizeof(ukey));
 	
 	Trades_it it = m_traders.find(ukey);
 	

@@ -215,8 +215,8 @@ static int ticker_request_handler(struct mg_connection *conn) {
   char	post_data[1024];int post_data_len;
   const char* ct = mg_get_header(conn, "Content-type");
   const struct mg_request_info *request_info = mg_get_request_info(conn);
-  cJson *root = NULL;
-  int post_data_len = mg_read(conn, post_data, sizeof(post_data));
+  cJSON *root = NULL;
+  post_data_len = mg_read(conn, post_data, sizeof(post_data));
   
   if (strcmp(ct, "Application/json")) {
 	  root = cJSON_Parse(post_data);
@@ -236,8 +236,8 @@ static int ticker_request_handler(struct mg_connection *conn) {
  
   {
 	  for (i = 0; ticker_config[i].uri != NULL; i++) {
-	    if (!slre_match(0, request_info->request_method, ticker_config[i].method) &&
-	         !slre_match(0, request_info->uri, ticker_config[i].uri)) {
+	    if (!slre_match((slre_option)0, request_info->request_method, ticker_config[i].method, sizeof(ticker_config[i].method)) &&
+	         !slre_match((slre_option)0, request_info->uri, ticker_config[i].uri, sizeof(ticker_config[i].uri))) {
 	      ticker_config[i].func(conn, trader);
 	      break;
 	    }

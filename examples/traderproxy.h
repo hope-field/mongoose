@@ -31,7 +31,7 @@ public:
 	traderproxy();
 	~traderproxy();
 	
-	int		get_user_from_conn(struct mg_connection*, const char*, char*, size_t);
+	int	get_post_var(struct mg_connection*, const char*, char*, size_t);
 	Trade*	create_trader(struct mg_connection*);
 	int		remove_trader(struct mg_connection*);
 	void	show_traders();
