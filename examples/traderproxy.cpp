@@ -61,7 +61,7 @@ Trade*	traderproxy::find_trader(struct mg_connection *conn)
 	return t;
 }	
 
-string&	traderproxy::get_user_from_conn(struct mg_connection* conn) {
+int	traderproxy::get_post_var(struct mg_connection* conn, const char *key, char *value, size_t data_len) {
     char post_data[1024], user[sizeof(post_data)], password[sizeof(post_data)];
     int post_data_len;
     Trade* trader = NULL;
@@ -72,11 +72,11 @@ string&	traderproxy::get_user_from_conn(struct mg_connection* conn) {
     post_data_len = mg_read(conn, post_data, sizeof(post_data));
 
     // Parse form data. input1 and input2 are guaranteed to be NUL-terminated
-    mg_get_var(post_data, post_data_len, "user", user, sizeof(user));
-    mg_get_var(post_data, post_data_len, "password", password, sizeof(password));
+    int len = mg_get_var(post_data, post_data_len, key, value, data_len);
+//    mg_get_var(post_data, post_data_len, "password", password, sizeof(password));
   
-	string ukey = u;
-  	return ukey;
+//	string ukey = u;
+  	return len;
 }
 
 traderproxy::traderproxy()

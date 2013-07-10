@@ -211,8 +211,15 @@ static const struct ticker_config {
 static int ticker_request_handler(struct mg_connection *conn) {
   int i;
   Trade* trader = NULL;
+  char	post_data[1024];int post_data_len;
+  const char* ct = mg_get_header(conn, "Content-type");
   const struct mg_request_info *request_info = mg_get_request_info(conn);
- 
+  cJson *root = NULL;
+  int post_data_len = mg_read(conn, post_data, sizeof(post_data));
+  
+  if (strcmp(ct, "Application/json")) {
+	  root = cJSON_Parse(post_data);
+  }
 //  trader = tick_server.create_trader(f, b, u, p);
   trader = tick_server.find_trader(conn);
   
