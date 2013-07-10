@@ -61,7 +61,7 @@ Trade*	traderproxy::find_trader(struct mg_connection *conn)
 	return t;
 }	
 
-string&	traderproxy::get_user_from_conn(struct mg_connection*) {
+string&	traderproxy::get_user_from_conn(struct mg_connection* conn) {
     char post_data[1024], user[sizeof(post_data)], password[sizeof(post_data)];
     int post_data_len;
     Trade* trader = NULL;
