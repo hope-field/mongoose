@@ -26,7 +26,7 @@ static int begin_request_handler(struct mg_connection *conn) {
 
   // Returning non-zero tells mongoose that our function has replied to
   // the client, and mongoose should not send client any more data.
-  return 1;
+  return 0;
 }
 
 static void websocket_ready_handler(struct mg_connection *conn) {

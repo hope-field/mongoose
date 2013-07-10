@@ -87,7 +87,7 @@ traderproxy::~traderproxy()
 {
 	for(Trades_it	it = m_traders.begin(); it != m_traders.end(); ++it) {
 		m_traders.erase(it->first);
-			delete	t->second;
+			delete	it->second;
 	}
 }
 
@@ -111,7 +111,7 @@ Trade* traderproxy::create_trader(struct mg_connection* conn) {
 	
 	trader->ReqConnect(f, b, u, p);
 	
-	m_traders->insert(pair<string, Trade*>(u, trader));
+	m_traders.insert(pair<string, Trade*>(u, trader));
 //	insert(pair<struct mg_connection*, Trades_t*>(conn, it));
 	
 	return trader;
