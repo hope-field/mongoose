@@ -30,6 +30,7 @@
 
 #include "mongoose.h"
 #include "cJSON.h"
+#include "slre.h"
 #include "traderproxy.h"
 
 #if !defined(LISTENING_PORT)
@@ -235,8 +236,8 @@ static int ticker_request_handler(struct mg_connection *conn) {
  
   {
 	  for (i = 0; ticker_config[i].uri != NULL; i++) {
-	    if (!strcmp(request_info->request_method, ticker_config[i].method) &&
-	         !strcmp(request_info->uri, ticker_config[i].uri)) {
+	    if (!slre_match(0, request_info->request_method, ticker_config[i].method) &&
+	         !slre_match(0, request_info->uri, ticker_config[i].uri)) {
 	      ticker_config[i].func(conn, trader);
 	      break;
 	    }
