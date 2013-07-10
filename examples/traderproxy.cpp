@@ -3,9 +3,9 @@
  *	$id$;
  */
 
-#include "tick.h"
+#include "traderproxy.h"
 
-Trade*	Tick::create_trader(struct mg_connection* conn)
+Trade*	traderproxy::create_trader(struct mg_connection* conn)
 {
 	Trade*		t = NULL;
 	string &u = get_user_from_conn(conn);
@@ -16,17 +16,17 @@ Trade*	Tick::create_trader(struct mg_connection* conn)
 		t = new Trade();
 		if (NULL != t)
 			t->ReqConnect(f, b, u, p);
-		this->insert(pair<string, Trade*>(u, t));
+		m_traders.insert(pair<string, Trade*>(u, t));
 	} else {
 		t = it->second;
 	}
 	return t;
 }
 
-int	Tick::remove_trader(string ukey)
+int	traderproxy::remove_trader(string ukey)
 {
 	int ret = 0;
-	Tick::iterator it = m_traders.find(ukey);
+	Trades_it it = m_traders.find(ukey);
 	
 	if(it != m_traders.end()) {
 		m_traders.erase(ukey);
@@ -37,15 +37,15 @@ int	Tick::remove_trader(string ukey)
 	return ret;
 }
 
-void Tick::show_traders ()
+void traderproxy::show_traders ()
 {
-	Tick::iterator	it;
+	Trades_it	it;
 	
 	for(it = m_traders.begin(); it != m_traders.end(); it++ ) {
 	}
 }
 
-Trade*	Tick::find_trader(struct mg_connection *conn)
+Trade*	traderproxy::find_trader(struct mg_connection *conn)
 {
 	Trade	*t = NULL;
 	string	&ukey = get_user_from_conn(conn);
@@ -57,7 +57,7 @@ Trade*	Tick::find_trader(struct mg_connection *conn)
 	return t;
 }	
 
-string&	Tick::get_user_from_conn(struct mg_connection*) {
+string&	traderproxy::get_user_from_conn(struct mg_connection*) {
     char post_data[1024], user[sizeof(post_data)], password[sizeof(post_data)];
     int post_data_len;
     Trade* trader = NULL;
@@ -74,13 +74,13 @@ string&	Tick::get_user_from_conn(struct mg_connection*) {
   	return string(u);
 }
 
-Tick::Tick()
+traderproxy::traderproxy()
 {
 }
 
-Tick::~Tick()
+traderproxy::~traderproxy()
 {
-	for(Tick::iterator	it = begin(); it != end(); ++it) {
+	for(Trades_it	it = m_traders.begin(); it != m_traders.end(); ++it) {
 		erase(it->first);
 		delete	t;
 	}

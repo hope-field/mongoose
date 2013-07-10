@@ -28,8 +28,8 @@ class traderproxy  : public map<struct mg_connection*, Trade*>{
 private:
 	Trades_t	m_traders;
 public:
-	Tick();
-	~Tick();
+	traderproxy();
+	~traderproxy();
 	
 	string	get_user_from_conn(struct mg_connection*);
 	Trade*	create_trader(struct mg_connection*);
