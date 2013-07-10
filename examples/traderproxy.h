@@ -6,6 +6,7 @@
 #include <hash_map>
 //#include <hash_set>
 
+#include "mongoose.h"
 #include "trader.h"
 
 using namespace std;
@@ -23,20 +24,18 @@ public:
 typedef		map<string, Trade*, StringComparerForMap>				Trades_t;
 typedef		map<string, Trade*, StringComparerForMap>::iterator		Trades_it;
 
-class Tick {
+class traderproxy  : public map<struct mg_connection*, Trade*>{
 private:
 	Trades_t	m_traders;
-
 public:
 	Tick();
 	~Tick();
-
-	Trade*	create_trader(char*, char*, char*, char*);
-	int		remove_trader(string);
+	
+	string	get_user_from_conn(struct mg_connection*);
+	Trade*	create_trader(struct mg_connection*);
+	int		remove_trader(struct mg_connection*);
 	void	show_traders();
-	Trade*	find_trader(string);
-public:
+	Trade*	find_trader(struct mg_connection*);
 };
-
 
 #endif // NGX_TICK_HANDLER_H

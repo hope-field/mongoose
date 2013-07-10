@@ -30,13 +30,13 @@
 
 #include "mongoose.h"
 #include "cJSON.h"
-#include "tick.h"
+#include "traderproxy.h"
 
 #if !defined(LISTENING_PORT)
 #define LISTENING_PORT "24"
 #endif
 
-static Tick tick_server;
+static traderproxy tick_server;
 
 static const char *standard_reply = "HTTP/1.1 200 OK\r\n"
   "Content-Type: text/plain\r\n"
@@ -209,23 +209,17 @@ static const struct ticker_config {
 };
 
 static int ticker_request_handler(struct mg_connection *conn) {
-  char post_data[1024], user[sizeof(post_data)], password[sizeof(post_data)];
-  int post_data_len;
   int i;
   Trade* trader = NULL;
-  char	*f = "tcp://27.17.62.149:40205", *b = "1035";
-  char	*u = "00000072", *p = "123456";
   const struct mg_request_info *request_info = mg_get_request_info(conn);
-  // User has submitted a form, show submitted data and a variable value
-  post_data_len = mg_read(conn, post_data, sizeof(post_data));
-
-  // Parse form data. input1 and input2 are guaranteed to be NUL-terminated
-  mg_get_var(post_data, post_data_len, "user", user, sizeof(user));
-  mg_get_var(post_data, post_data_len, "password", password, sizeof(password));
+ 
+//  trader = tick_server.create_trader(f, b, u, p);
+  trader = tick_server.find_trader(conn);
   
-  trader = tick_server.create_trader(f, b, u, p);
-  
-  if(!trader) return 0;
+  if(!trader) {
+	  trader = tick_server.create_trader(conn);
+	  if (!trader) return 0;
+  }
   
   trader->isdone = 0;
   memset(trader->buffer, 0, sizeof(trader->buffer));
@@ -243,7 +237,8 @@ static int ticker_request_handler(struct mg_connection *conn) {
 	 cerr<<"@1"<<endl; 
 	  while (!trader->isdone){}
 	 cerr<<"@2"<<endl; 
-	  
+	 tick_server.erase(conn);
+	 
 	  mg_write(conn, trader->buffer, strlen(trader->buffer));
   }
 
@@ -266,7 +261,7 @@ static int ticker_wb_data_handler(struct mg_connection *conn, int flags,
   unsigned char reply[200];
   size_t i;
   const struct mg_request_info *ri = mg_get_request_info(conn);
-  Trade *t = tick_server.find_trader(ri->remote_user);
+  Trade *t = tick_server.find(conn);
   (void) flags;
 
   // Truncate echoed message, to simplify output code.

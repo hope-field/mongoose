@@ -1,0 +1,114 @@
+
+/**
+ *	$id$;
+ */
+
+#include "tick.h"
+
+Trade*	Tick::create_trader(struct mg_connection* conn)
+{
+	Trade*		t = NULL;
+	string &u = get_user_from_conn(conn);
+	
+	Trades_it	it = m_traders.find(u);
+	
+	if(m_traders.end() == it) {
+		t = new Trade();
+		if (NULL != t)
+			t->ReqConnect(f, b, u, p);
+		this->insert(pair<string, Trade*>(u, t));
+	} else {
+		t = it->second;
+	}
+	return t;
+}
+
+int	Tick::remove_trader(string ukey)
+{
+	int ret = 0;
+	Tick::iterator it = m_traders.find(ukey);
+	
+	if(it != m_traders.end()) {
+		m_traders.erase(ukey);
+
+		ret = 1;
+	}
+
+	return ret;
+}
+
+void Tick::show_traders ()
+{
+	Tick::iterator	it;
+	
+	for(it = m_traders.begin(); it != m_traders.end(); it++ ) {
+	}
+}
+
+Trade*	Tick::find_trader(struct mg_connection *conn)
+{
+	Trade	*t = NULL;
+	string	&ukey = get_user_from_conn(conn);
+	
+	Trades_it it = m_traders.find(ukey);
+	
+	if(it != m_traders.end()) t = it->second;
+
+	return t;
+}	
+
+string&	Tick::get_user_from_conn(struct mg_connection*) {
+    char post_data[1024], user[sizeof(post_data)], password[sizeof(post_data)];
+    int post_data_len;
+    Trade* trader = NULL;
+    char	*f = "tcp://27.17.62.149:40205", *b = "1035";
+    char	*u = "00000072", *p = "123456";
+    const struct mg_request_info *request_info = mg_get_request_info(conn);
+    // User has submitted a form, show submitted data and a variable value
+    post_data_len = mg_read(conn, post_data, sizeof(post_data));
+
+    // Parse form data. input1 and input2 are guaranteed to be NUL-terminated
+    mg_get_var(post_data, post_data_len, "user", user, sizeof(user));
+    mg_get_var(post_data, post_data_len, "password", password, sizeof(password));
+  
+  	return string(u);
+}
+
+Tick::Tick()
+{
+}
+
+Tick::~Tick()
+{
+	for(Tick::iterator	it = begin(); it != end(); ++it) {
+		erase(it->first);
+		delete	t;
+	}
+}
+
+/*
+Trade* traderproxy::create_trader(struct mg_connection* conn) {
+    char post_data[1024], user[sizeof(post_data)], password[sizeof(post_data)];
+    int post_data_len;
+    Trade* trader = NULL;
+    char	*f = "tcp://27.17.62.149:40205", *b = "1035";
+    char	*u = "00000072", *p = "123456";
+    const struct mg_request_info *request_info = mg_get_request_info(conn);
+    // User has submitted a form, show submitted data and a variable value
+    post_data_len = mg_read(conn, post_data, sizeof(post_data));
+
+    // Parse form data. input1 and input2 are guaranteed to be NUL-terminated
+    mg_get_var(post_data, post_data_len, "user", user, sizeof(user));
+    mg_get_var(post_data, post_data_len, "password", password, sizeof(password));
+  
+    trader = new Trader();
+	if (!trader) return NULL;
+	
+	trader->ReqConnect(f, b, u, p);
+	
+	Trades_it *it = m_traders->insert(pair<string, Trade*>(u, trader));
+	insert(pair<struct mg_connection*, Trades_t*>(conn, it));
+	
+	return trader
+  //  trader = tick_server.create_trader(f, b, u, p);
+}*/
