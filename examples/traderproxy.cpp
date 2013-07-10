@@ -5,6 +5,7 @@
 
 #include "traderproxy.h"
 
+/*
 Trade*	traderproxy::create_trader(struct mg_connection* conn)
 {
 	Trade*		t = NULL;
@@ -22,6 +23,7 @@ Trade*	traderproxy::create_trader(struct mg_connection* conn)
 	}
 	return t;
 }
+*/
 
 int	traderproxy::remove_trader(string ukey)
 {
@@ -86,7 +88,7 @@ traderproxy::~traderproxy()
 	}
 }
 
-/*
+
 Trade* traderproxy::create_trader(struct mg_connection* conn) {
     char post_data[1024], user[sizeof(post_data)], password[sizeof(post_data)];
     int post_data_len;
@@ -106,9 +108,9 @@ Trade* traderproxy::create_trader(struct mg_connection* conn) {
 	
 	trader->ReqConnect(f, b, u, p);
 	
-	Trades_it *it = m_traders->insert(pair<string, Trade*>(u, trader));
-	insert(pair<struct mg_connection*, Trades_t*>(conn, it));
+	m_traders->insert(pair<string, Trade*>(u, trader));
+//	insert(pair<struct mg_connection*, Trades_t*>(conn, it));
 	
 	return trader
   //  trader = tick_server.create_trader(f, b, u, p);
-}*/
+}
