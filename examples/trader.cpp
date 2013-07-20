@@ -378,7 +378,6 @@ void Trade::OnRspQryTradingAccount(CThostFtdcTradingAccountField* pTradingAccoun
 			cJSON_AddNumberToObject(fmt, "frozencommission", pTradingAccount->FrozenCommission);
 			
 			out = cJSON_Print(root);
-			cerr<<out<<endl;
 			memcpy(buffer, out, strlen(out));
 			cJSON_Delete(root);
 			free(out);
@@ -390,12 +389,31 @@ void Trade::OnRspQryTradingAccount(CThostFtdcTradingAccountField* pTradingAccoun
 //报单响应
 void Trade::OnRtnOrder(CThostFtdcOrderField* pOrder)
 {
+	cJSON	*root;
+	char	*out;
+	root = cJSON_CreateObject();
+	cJSON_AddItemToObject(root, "return", cJSON_CreateString("sucess"));
+	
+	out = cJSON_Print(root);
+	memcpy(buffer, out, strlen(out));
+	cJSON_Delete(root);
+	free(out);
 	isdone = 1;
 }
 
 //成交响应
 void Trade::OnRtnTrade(CThostFtdcTradeField* pTrade)
 {
+	cJSON	*root;
+	char	*out;
+	root = cJSON_CreateObject();
+	cJSON_AddItemToObject(root, "return", cJSON_CreateString("sucess"));
+	
+	out = cJSON_Print(root);
+	memcpy(buffer, out, strlen(out));
+	cJSON_Delete(root);
+	free(out);
+	isdone = 1;
 	//show(str(//boost::format("成交编号:%1%, 平台编号%2%, 成交时间%3%")%pTradeID %pBrokerOrderSeq %pTradeTime), 2);
 }
 

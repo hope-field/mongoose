@@ -203,9 +203,9 @@ static const struct ticker_config {
   void (*func)(struct mg_connection * , Trade*);
 } ticker_config[] = {
   {"GET", "/accts", &get_account_info},
-  {"GET", "/get_position", &get_position_info},
-  {"POST", "/order_insert", &post_order_insert},
-  {"DELETE", "/del_order_action", &del_order_action},
+  {"GET", "/position", &get_position_info},
+  {"POST", "/order", &post_order_insert},
+  {"DELETE", "/order", &del_order_action},
   {NULL, NULL, NULL}
 };
 
@@ -218,9 +218,9 @@ static int ticker_request_handler(struct mg_connection *conn) {
   cJSON *root = NULL;
   post_data_len = mg_read(conn, post_data, sizeof(post_data));
   
-//  if (strcmp(ct, "Application/json")) {
-//	  root = cJSON_Parse(post_data);
-//  }
+  if (!slre_match((slre_option)0, ct, "Application/json", strlen(ct))) {
+  	  root = cJSON_Parse(post_data);
+     }
 //  trader = tick_server.create_trader(f, b, u, p);
 	 cerr<<"@1"<<endl; 
   trader = tick_server.find_trader(conn);
