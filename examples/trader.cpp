@@ -3,6 +3,7 @@
 #include	<unistd.h>
 #include	"trader.h"
 #include	"cJSON.h"
+#include	"stdlib.h"
 
 //报单-限价
 int Trade::ReqOrderInsert(const char* instrument, double price, int director, int offset, int volume)
@@ -377,6 +378,7 @@ void Trade::OnRspQryTradingAccount(CThostFtdcTradingAccountField* pTradingAccoun
 			cJSON_AddNumberToObject(fmt, "frozencommission", pTradingAccount->FrozenCommission);
 			
 			out = cJSON_Print(root);
+			cerr<<out<<endl;
 			memcpy(buffer, out, strlen(out));
 			cJSON_Delete(root);
 			free(out);

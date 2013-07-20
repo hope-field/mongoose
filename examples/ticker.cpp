@@ -202,7 +202,7 @@ static const struct ticker_config {
   const char *uri;
   void (*func)(struct mg_connection * , Trade*);
 } ticker_config[] = {
-  {"GET", "/get_account", &get_account_info},
+  {"GET", "/accts", &get_account_info},
   {"GET", "/get_position", &get_position_info},
   {"POST", "/order_insert", &post_order_insert},
   {"DELETE", "/del_order_action", &del_order_action},
@@ -213,15 +213,16 @@ static int ticker_request_handler(struct mg_connection *conn) {
   int i;
   Trade* trader = NULL;
   char	post_data[1024];int post_data_len;
-  const char* ct = mg_get_header(conn, "Content-type");
+  const char* ct = mg_get_header(conn, "Content-Type");
   const struct mg_request_info *request_info = mg_get_request_info(conn);
   cJSON *root = NULL;
   post_data_len = mg_read(conn, post_data, sizeof(post_data));
   
-  if (strcmp(ct, "Application/json")) {
-	  root = cJSON_Parse(post_data);
-  }
+//  if (strcmp(ct, "Application/json")) {
+//	  root = cJSON_Parse(post_data);
+//  }
 //  trader = tick_server.create_trader(f, b, u, p);
+	 cerr<<"@1"<<endl; 
   trader = tick_server.find_trader(conn);
   
   if(!trader) {
@@ -236,13 +237,12 @@ static int ticker_request_handler(struct mg_connection *conn) {
  
   {
 	  for (i = 0; ticker_config[i].uri != NULL; i++) {
-	    if (!slre_match((slre_option)0, request_info->request_method, ticker_config[i].method, sizeof(ticker_config[i].method)) &&
-	         !slre_match((slre_option)0, request_info->uri, ticker_config[i].uri, sizeof(ticker_config[i].uri))) {
+	    if (!slre_match((slre_option)0, request_info->request_method, ticker_config[i].method, sizeof(request_info->request_method)) &&
+	         !slre_match((slre_option)0, request_info->uri, ticker_config[i].uri, sizeof(request_info->uri))) {
 	      ticker_config[i].func(conn, trader);
 	      break;
 	    }
 	  }
-	 cerr<<"@1"<<endl; 
 	  while (!trader->isdone){}
 	 cerr<<"@2"<<endl; 
 	 tick_server.erase(conn);
