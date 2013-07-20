@@ -2,6 +2,7 @@
 #include	<iostream>
 #include	<unistd.h>
 #include	"trader.h"
+#include	"cJSON.h"
 
 //报单-限价
 int Trade::ReqOrderInsert(const char* instrument, double price, int director, int offset, int volume)
@@ -362,14 +363,23 @@ void Trade::OnRspQryTradingAccount(CThostFtdcTradingAccountField* pTradingAccoun
 	if(bIsLast)
 	{
 		if (!IsErrorRspInfo(pRspInfo) &&  pTradingAccount){
-				sprintf(buffer ," 响应 | 权益:%f %s",pTradingAccount->Balance
-				," 可用:%g %s",pTradingAccount->Available   
-				," 保证金:%g %s",pTradingAccount->CurrMargin
-				," 平仓盈亏:%g %s",pTradingAccount->CloseProfit
-				," 持仓盈亏:%g %s",pTradingAccount->PositionProfit
-				," 手续费:%g %s", pTradingAccount->Commission
-				," 冻结保证金:%g %s",pTradingAccount->FrozenMargin
-				," 冻结手续费:%g",pTradingAccount->FrozenCommission);
+			cJSON	*root, *fmt; char* out;
+			root = cJSON_CreateObject();
+			cJSON_AddItemToObject(root, "return", cJSON_CreateString("sucess"));
+			cJSON_AddItemToObject(root, "format", fmt = cJSON_CreateObject());
+			cJSON_AddNumberToObject(fmt, "balance", pTradingAccount->Balance);
+			cJSON_AddNumberToObject(fmt, "available", pTradingAccount->Available);
+			cJSON_AddNumberToObject(fmt, "currmargin", pTradingAccount->CurrMargin);
+			cJSON_AddNumberToObject(fmt, "closeprofit", pTradingAccount->CloseProfit);
+			cJSON_AddNumberToObject(fmt, "positionprofit", pTradingAccount->PositionProfit);
+			cJSON_AddNumberToObject(fmt, "commission", pTradingAccount->Commission);
+			cJSON_AddNumberToObject(fmt, "frozenmargin", pTradingAccount->FrozenMargin);
+			cJSON_AddNumberToObject(fmt, "frozencommission", pTradingAccount->FrozenCommission);
+			
+			out = cJSON_Print(root);
+			memcpy(buffer, out, strlen(out));
+			cJSON_Delete(root);
+			free(out);
 		}
 		isdone = 1;
 	}
