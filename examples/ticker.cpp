@@ -216,13 +216,10 @@ static int ticker_request_handler(struct mg_connection *conn) {
   const char* ct = mg_get_header(conn, "Content-Type");
   const struct mg_request_info *request_info = mg_get_request_info(conn);
   cJSON *root = NULL;
-  post_data_len = mg_read(conn, post_data, sizeof(post_data));
+//  post_data_len = mg_read(conn, post_data, sizeof(post_data));
   
-  if (!slre_match((slre_option)0, ct, "Application/json", strlen(ct))) {
-  	  root = cJSON_Parse(post_data);
-     }
+//  cerr<<"@1"<<post_data<<endl; 
 //  trader = tick_server.create_trader(f, b, u, p);
-	 cerr<<"@1"<<endl; 
   trader = tick_server.find_trader(conn);
   
   if(!trader) {

@@ -3,8 +3,9 @@
  *	$id$;
  */
 
-#include "traderproxy.h"
+#include	"traderproxy.h"
 #include	"cJSON.h"
+#include	"slre.h"
 /*
 Trade*	traderproxy::create_trader(struct mg_connection* conn)
 {
@@ -52,31 +53,36 @@ void traderproxy::show_traders ()
 
 Trade*	traderproxy::find_trader(struct mg_connection *conn)
 {
-	Trade	*t = NULL;
+    Trade	*t = NULL;
     char post_data[1024], user[sizeof(post_data)], password[sizeof(post_data)];
     int post_data_len;
-	char	*f = NULL, *b = NULL, *u = NULL, *p = NULL;
+    char	*f = NULL, *b = NULL, *u = NULL, *p = NULL;
 //    char	*f = "tcp://27.17.62.149:40205", *b = "1035";
 //    char	*u = "00000072", *p = "123456";
     cJSON *root = NULL;
     const struct mg_request_info *request_info = mg_get_request_info(conn);
     // User has submitted a form, show submitted data and a variable value
     const char* ct = mg_get_header(conn, "Content-Type");
+    const char* user_data = (const char*)request_info->user_data;
     post_data_len = mg_read(conn, post_data, sizeof(post_data));
-  
+
     if (!slre_match((slre_option)0, ct, "Application/json", strlen(ct))) {
     	root = cJSON_Parse(post_data);
+	if(root) {
 		f = cJSON_GetObjectItem(root, "host")->valuestring;
 		b = cJSON_GetObjectItem(root, "broker")->valuestring;
 		u = cJSON_GetObjectItem(root, "user")->valuestring;
 		p = cJSON_GetObjectItem(root, "password")->valuestring;
+	}
     }
-	
+    cerr<<u<<"@1"<<post_data<<endl; 
+    if (!u) {	
 	Trades_it it = m_traders.find(u);
 	
 	if(it != m_traders.end()) t = it->second;
+    }
 
-	return t;
+    return t;
 }	
 
 int	traderproxy::get_post_var(struct mg_connection* conn, const char *key, char *value, size_t data_len) {
