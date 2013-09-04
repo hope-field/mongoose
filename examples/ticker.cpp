@@ -215,9 +215,13 @@ static int ticker_request_handler(struct mg_connection *conn) {
   char	post_data[1024];int post_data_len;
   const char* ct = mg_get_header(conn, "Content-Type");
   const struct mg_request_info *request_info = mg_get_request_info(conn);
+  const char* query_string = request_info->query_string;
   cJSON *root = NULL;
 //  post_data_len = mg_read(conn, post_data, sizeof(post_data));
-  
+  char user[32], pass[32], front[128], broker[32];
+  sscanf(request_info->uri, "/api/v1/as/%4s/%8s",  broker, user);
+  mg_get_var(query_string, strlen(query_string), "front", front, sizeof(front)); 
+  mg_get_var(query_string, strlen(query_string), "pass", pass, sizeof(pass)); 
 //  cerr<<"@1"<<post_data<<endl; 
 //  trader = tick_server.create_trader(f, b, u, p);
   trader = tick_server.find_trader(conn);
@@ -229,9 +233,9 @@ static int ticker_request_handler(struct mg_connection *conn) {
   
   trader->isdone = 0;
   memset(trader->buffer, 0, sizeof(trader->buffer));
-  
-  while(trader->status < 2) {}
  
+   
+  while(trader->status < 2) 
   {
 	  for (i = 0; ticker_config[i].uri != NULL; i++) {
 	    if (!slre_match((slre_option)0, request_info->request_method, ticker_config[i].method, sizeof(request_info->request_method)) &&
