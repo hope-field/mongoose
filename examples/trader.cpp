@@ -1,4 +1,5 @@
 
+
 #include	<iostream>
 #include	<unistd.h>
 #include	"trader.h"
@@ -108,7 +109,7 @@ int Trade::ReqOrderAction(const char* instrument, int session, int frontid, cons
 	f.SessionID = session;
 	f.FrontID = frontid;
 	strcpy(f.OrderRef, orderref);
-	cout<<__FUNCTION__<<endl;
+	cout<<"@"<<__FUNCTION__<<endl;
 
 	return pUserApi->ReqOrderAction(&f, ++iReqID);
 }
@@ -143,7 +144,7 @@ int Trade::ReqQryTradingAccount()
 	strcpy(f.InvestorID, investor);
 	do {
 		ret =  pUserApi->ReqQryTradingAccount(&f, ++iReqID);
-		//sleep (500);		
+		sleep (1);		
 	} while (3 == ret);
 
 	return ret;
@@ -242,13 +243,13 @@ void Trade::OnRspUserLogin(CThostFtdcRspUserLoginField* pRspUserLogin,
 	}
 	else
 	{
-		CThostFtdcQrySettlementInfoConfirmField req;
+		CThostFtdcSettlementInfoConfirmField req;
 		memset(&req, 0, sizeof(req));
 		strcpy(req.BrokerID, broker);
 		strcpy(req.InvestorID, investor);
-	        cerr<<__FUNCTION__<<endl;
-		status = 3;
-//		int ret = pUserApi->ReqQrySettlementInfoConfirm(&req, ++iReqID);
+	        cerr<<"@"<<__FUNCTION__<<endl;
+//		status = 3;
+		int ret = pUserApi->ReqSettlementInfoConfirm(&req, ++iReqID);
 	}
 }
 
@@ -263,8 +264,9 @@ void Trade::OnRspQrySettlementInfoConfirm(CThostFtdcSettlementInfoConfirmField* 
 	}
 	else
 	{  
+		cerr<<"@"<<__FUNCTION__<<endl;
 		strcpy(tradingDay, pUserApi->GetTradingDay());
-		if((pSettlementInfoConfirm) && strcmp(pSettlementInfoConfirm->ConfirmDate, tradingDay) == 0)
+		if((pSettlementInfoConfirm))// && strcmp(pSettlementInfoConfirm->ConfirmDate, tradingDay) == 0)
 		{
 			CThostFtdcSettlementInfoConfirmField f;
 			memset(&f, 0, sizeof(f));
@@ -300,6 +302,7 @@ void Trade::OnRspQrySettlementInfo(CThostFtdcSettlementInfoField* pSettlementInf
 		strcpy(f.BrokerID, broker);
 		strcpy(f.InvestorID, investor);
 		pUserApi->ReqSettlementInfoConfirm(&f, ++iReqID);
+		cerr<<"@"<<__FUNCTION__<<endl;
 	}
 }
 
@@ -307,6 +310,7 @@ void Trade::OnRspQrySettlementInfo(CThostFtdcSettlementInfoField* pSettlementInf
 void Trade::OnRspSettlementInfoConfirm(CThostFtdcSettlementInfoConfirmField* pSettlementInfoConfirm,
 	CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
+	cerr<<"@"<<__FUNCTION__<<endl;
 	status = 3;
 //	main_handler(req, res);
 }
@@ -342,8 +346,17 @@ void Trade::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField* pInvestorP
 	{
 	}
 
-	if(bIsLast)
-	{
+	if (bIsLast) {
+		cJSON	*root;
+		char	*out;
+		root = cJSON_CreateObject();
+		cJSON_AddItemToObject(root, "return", cJSON_CreateString("sucess"));
+		
+		out = cJSON_Print(root);
+		memcpy(buffer, out, strlen(out));
+		cJSON_Delete(root);
+		free(out);
+		cerr<<"@"<< __FUNCTION__ << endl;
 		isdone = 1;
 	}
 }
@@ -353,6 +366,16 @@ void Trade::OnRspQryInvestorPositionDetail(CThostFtdcInvestorPositionDetailField
 	CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
 	if (bIsLast) {
+		cJSON	*root;
+		char	*out;
+		root = cJSON_CreateObject();
+		cJSON_AddItemToObject(root, "return", cJSON_CreateString("sucess"));
+		
+		out = cJSON_Print(root);
+		memcpy(buffer, out, strlen(out));
+		cJSON_Delete(root);
+		free(out);
+		printf("@%s", __FUNCTION__);
 		isdone = 1;
 	}
 }
@@ -389,38 +412,51 @@ void Trade::OnRspQryTradingAccount(CThostFtdcTradingAccountField* pTradingAccoun
 //报单响应
 void Trade::OnRtnOrder(CThostFtdcOrderField* pOrder)
 {
-	cJSON	*root;
-	char	*out;
-	root = cJSON_CreateObject();
-	cJSON_AddItemToObject(root, "return", cJSON_CreateString("sucess"));
-	
-	out = cJSON_Print(root);
-	memcpy(buffer, out, strlen(out));
-	cJSON_Delete(root);
-	free(out);
-	isdone = 1;
+  CThostFtdcOrderField* order = new CThostFtdcOrderField();
+  memcpy(order,  pOrder, sizeof(CThostFtdcOrderField));
+  bool founded=false;    unsigned int i=0;
+  for(i=0; i<orderList.size(); i++){
+    if(orderList[i]->BrokerOrderSeq == order->BrokerOrderSeq) {
+      founded=true;    break;
+    }
+  }
+  cerr<<"@"<<__FUNCTION__<<endl;
+   isdone = 1;
+  if(founded) orderList[i]= order;   
+  else  orderList.push_back(order);
 }
 
 //成交响应
 void Trade::OnRtnTrade(CThostFtdcTradeField* pTrade)
 {
-	cJSON	*root;
-	char	*out;
-	root = cJSON_CreateObject();
-	cJSON_AddItemToObject(root, "return", cJSON_CreateString("sucess"));
-	
-	out = cJSON_Print(root);
-	memcpy(buffer, out, strlen(out));
-	cJSON_Delete(root);
-	free(out);
-	isdone = 1;
-	//show(str(//boost::format("成交编号:%1%, 平台编号%2%, 成交时间%3%")%pTradeID %pBrokerOrderSeq %pTradeTime), 2);
+ CThostFtdcTradeField* trade = new CThostFtdcTradeField();
+  memcpy(trade,  pTrade, sizeof(CThostFtdcTradeField));
+  bool founded=false;     unsigned int i=0;
+  for(i=0; i<tradeList.size(); i++){
+    if(tradeList[i]->TradeID == trade->TradeID) {
+      founded=true;   break;
+    }
+  }
+  cerr<<"@"<<__FUNCTION__<<endl;
+  isdone = 1;
+  if(founded) tradeList[i] = trade;   
+  else  tradeList.push_back(trade);	//show(str(//boost::format("成交编号:%1%, 平台编号%2%, 成交时间%3%")%pTradeID %pBrokerOrderSeq %pTradeTime), 2);
 }
 
 //报单错误
 void Trade::OnRspOrderInsert(CThostFtdcInputOrderField* pInputOrder, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
 	if (bIsLast) {
+		cJSON	*root;
+		char	*out;
+		root = cJSON_CreateObject();
+		cJSON_AddItemToObject(root, "return", cJSON_CreateString("sucess"));
+		
+		out = cJSON_Print(root);
+		memcpy(buffer, out, strlen(out));
+		cJSON_Delete(root);
+		free(out);
+		cerr<<"@"<< __FUNCTION__<<endl;
 		isdone = 1;
 	}
 	//show(pRspInfo->ErrorMsg, 2);
@@ -429,15 +465,28 @@ void Trade::OnRspOrderInsert(CThostFtdcInputOrderField* pInputOrder, CThostFtdcR
 //报单错误
 void Trade::OnErrRtnOrderInsert(CThostFtdcInputOrderField* pInputOrder, CThostFtdcRspInfoField* pRspInfo)
 {
-	//show(pRspInfo->ErrorMsg, 2);
+	cerr<<pRspInfo->ErrorMsg<<endl;
+	cerr<<pRspInfo->ErrorID<<"@"<<__FUNCTION__<<endl;
 	isdone = 1;
 }
 
 //撤单错误
 void Trade::OnRspOrderAction(CThostFtdcInputOrderActionField* pInputOrderAction, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
+	if (bIsLast) {
+		cJSON	*root;
+		char	*out;
+		root = cJSON_CreateObject();
+		cJSON_AddItemToObject(root, "return", cJSON_CreateString("sucess"));
+		
+		out = cJSON_Print(root);
+		memcpy(buffer, out, strlen(out));
+		cJSON_Delete(root);
+		free(out);
+		printf("@%s", __FUNCTION__);
+		isdone = 1;
+	}
 	//show(pRspInfo->ErrorMsg, 2);
-	isdone = 1;
 }
 
 //签约银行
@@ -623,30 +672,37 @@ void Trade::OnRspQryInvestorPositionCombineDetail(CThostFtdcInvestorPositionComb
 
 void Trade::OnRspQryCFMMCTradingAccountKey(CThostFtdcCFMMCTradingAccountKeyField* pCFMMCTradingAccountKey, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
+	cerr<<"@"<<__FUNCTION__<<endl;
 }
 
 void Trade::OnRspQryEWarrantOffset(CThostFtdcEWarrantOffsetField* pEWarrantOffset, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
+	cerr<<"@"<<__FUNCTION__<<endl;
 }
 
 void Trade::OnRspQryTransferSerial(CThostFtdcTransferSerialField* pTransferSerial, CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
+	cerr<<"@"<<__FUNCTION__<<endl;
 }
 
 void Trade::OnRspError(CThostFtdcRspInfoField* pRspInfo, int nRequestID, bool bIsLast)
 {
+	cerr<<"@"<<__FUNCTION__<<endl;
 }
 
 void Trade::OnErrRtnOrderAction(CThostFtdcOrderActionField* pOrderAction, CThostFtdcRspInfoField* pRspInfo)
 {
+	cerr<<"@"<<__FUNCTION__<<endl;
 }
 
 void Trade::OnRtnInstrumentStatus(CThostFtdcInstrumentStatusField* pInstrumentStatus)
 {
+	cerr<<"@"<<__FUNCTION__<<endl;
 }
 
 void Trade::OnRtnTradingNotice(CThostFtdcTradingNoticeInfoField* pTradingNoticeInfo)
 {
+	cerr<<"@"<<__FUNCTION__<<endl;
 }
 
 void Trade::OnRtnErrorConditionalOrder(CThostFtdcErrorConditionalOrderField* pErrorConditionalOrder)
@@ -760,7 +816,7 @@ void Trade::ReqLogin( )
 	pUserApi->ReqUserLogin(&req, ++iReqID);
 }
 
-void Trade::ReqConnect(char* f, const char* b, const char* u, char* p)
+void Trade::ReqConnect(const char* f, const char* b, const char* u, const char* p)
 {
 	pUserApi = CThostFtdcTraderApi::CreateFtdcTraderApi(u);
 	pUserApi->RegisterSpi((CThostFtdcTraderSpi*)this);
@@ -773,7 +829,7 @@ void Trade::ReqConnect(char* f, const char* b, const char* u, char* p)
 	strcpy(investor, u);
 	strcpy(password, p);
 
-	pUserApi->RegisterFront(f);
+	pUserApi->RegisterFront((char*)f);
 	pUserApi->Init();
 	fprintf(stderr, "@%s\n", __FUNCTION__);
 }
@@ -783,7 +839,40 @@ bool Trade::IsErrorRspInfo(CThostFtdcRspInfoField* pRspInfo)
 		// 如果ErrorID != 0, 说明收到了错误的响应
 		bool bResult = ((pRspInfo) && (pRspInfo->ErrorID != 0));
 		if (bResult)
-		cerr<< "--->>> ErrorID="
+		cerr<< "--->>> ErrorID=" << pRspInfo->ErrorID
 			<< ", ErrorMsg=" << pRspInfo->ErrorMsg;
 		return bResult;
 	}
+
+int Trade::ShowOrders(){
+
+  CThostFtdcOrderField* pOrder; 
+  for(unsigned int i=0; i<orderList.size(); i++){
+    pOrder = orderList[i];
+    cerr<<" 报单 | 合约:"<<pOrder->InstrumentID
+//      <<" 方向:"<<MapDirection(pOrder->Direction,false)
+//      <<" 开平:"<<MapOffset(pOrder->CombOffsetFlag[0],false)
+      <<" 价格:"<<pOrder->LimitPrice
+      <<" 数量:"<<pOrder->VolumeTotalOriginal
+      <<" 序号:"<<pOrder->BrokerOrderSeq 
+      <<" 报单编号:"<<pOrder->OrderSysID
+      <<" 状态:"<<pOrder->StatusMsg<<endl;
+  }
+
+   return 1;
+}
+
+int Trade::ShowTrades(){
+  CThostFtdcTradeField* pTrade;
+  for(unsigned int i=0; i<tradeList.size(); i++){
+    pTrade = tradeList[i];
+    cerr<<" 成交 | 合约:"<< pTrade->InstrumentID 
+//      <<" 方向:"<<MapDirection(pTrade->Direction,false)
+//      <<" 开平:"<<MapOffset(pTrade->OffsetFlag,false) 
+      <<" 价格:"<<pTrade->Price
+      <<" 数量:"<<pTrade->Volume
+      <<" 报单编号:"<<pTrade->OrderSysID
+      <<" 成交编号:"<<pTrade->TradeID<<endl;
+  }
+   return 1;
+}

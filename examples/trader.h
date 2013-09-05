@@ -1,15 +1,16 @@
 /*
 ** Copyright (C) QPSOFT.COM All rights reserved.
 */
-#ifndef TRADE_H
-#define TRADE_H
-
-#include "ThostFtdcTraderApi.h"
+#ifndef TRADER_H
+#define TRADER_H
 
 #include	<stdio.h>
 #include	<string.h>
 #include	<iostream>
 #include	<map>
+#include	<vector>
+
+#include "ThostFtdcTraderApi.h"
 
 using namespace std;
 
@@ -277,12 +278,13 @@ public:
 	char* broker, *investor;
 	int orderRef;
 	char		buffer[1024];
-	volatile	int	status;
-	volatile	int isdone;
+	//convert volatile to pthread_wait
+	volatile	int		status;
+	volatile	int 	isdone;
 	
 	CThostFtdcTraderApi* pUserApi;
 
-	void ReqConnect(char* f, const char* b, const char* u, char* p);
+	void ReqConnect(const char* f, const char* b, const char* u, const char* p);
 
 	//报单-限价
 	int ReqOrderInsert(const char* instrument, double price, int director, int offset, int volume);
@@ -306,8 +308,12 @@ public:
 	int ReqTransferByFuture(const char* bankID, const char* bankPWD, const char* accountPWD, double amount, bool f2B);
 public:
 
+	int 	ShowOrders();
+	int 	ShowTrades();
 	bool	isReady() { return m_isready; }
-
+private:
+	vector<CThostFtdcOrderField *>	orderList;
+	vector<CThostFtdcTradeField *>	tradeList;
 private:
 	int		addrID;
 	bool	m_isready;

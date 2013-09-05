@@ -147,54 +147,70 @@ static void test_post(struct mg_connection *conn ) {
   }
 }
 
-static void get_account_info(struct mg_connection *conn, Trade* t) {
-	t->ReqQryTradingAccount();
-	cerr<<"@"<<__FUNCTION__<<endl;
+static int get_account_info(struct mg_connection *conn, Trade* t) {
+	return t->ReqQryTradingAccount();
 }
 
-static void get_position_info(struct mg_connection *conn, Trade *t) {
-	t->ReqQryInvestorPosition();
+static int get_position_info(struct mg_connection *conn, Trade *t) {
+	return t->ReqQryInvestorPosition();
 }
 
-static void post_order_insert(struct mg_connection *conn, Trade *t) {
+static int post_order_insert(struct mg_connection *conn, Trade *t) {
 	char instrument[16], _price[16], _director[16], _offset[16], _volume[16];
 	double price; int director; int offset; int volume;
 	char post_data[1024];int post_data_len;
+	const char* ct = mg_get_header(conn, "Content-Type");
 	const struct mg_request_info *ri = mg_get_request_info(conn);
 	
 	post_data_len = mg_read(conn, post_data, sizeof(post_data));
+
+	if ( !strcmp(ct, "Application/json")) {
+		cJSON *root = cJSON_Parse(data);
+		const char *instrument = cJSON_GetObjectItem(root, "instrument")->valuestring;
+		const double	price = cJSON_GetObjectItem(root, "price")->valuedouble;
+		const int	director = cJSON_GetObjectItem(root, "director")->valueint;
+		const int	offset = cJSON_GetObjectItem(root, "offset")->valueint;
+		const int	volume = cJSON_GetObjectItem(root, "volume")->valueint;		
+	} else {
+		mg_get_var(post_data, post_data_len, "instrument", instrument, sizeof(instrument));
+		mg_get_var(post_data, post_data_len, "price", _price, sizeof(_price));
+		mg_get_var(post_data, post_data_len, "director", _director, sizeof(_director));
+		mg_get_var(post_data, post_data_len, "offset", _offset, sizeof(_offset));
+		mg_get_var(post_data, post_data_len, "volume", _volume, sizeof(_volume));	
+
+		price = atof(_price);
+		director = atoi(_director);
+		offset = atoi(_offset);
+		volume = atoi(_volume);
+	}	
 	
-	mg_get_var(post_data, post_data_len, "instrument", instrument, sizeof(instrument));
-	mg_get_var(post_data, post_data_len, "price", _price, sizeof(_price));
-	mg_get_var(post_data, post_data_len, "director", _director, sizeof(_director));
-	mg_get_var(post_data, post_data_len, "offset", _offset, sizeof(_offset));
-	mg_get_var(post_data, post_data_len, "volume", _volume, sizeof(_volume));
-	
-	price = atof(_price);
-	director = atoi(_director);
-	offset = atoi(_offset);
-	volume = atoi(_volume);
-	
-	t->ReqOrderInsert(instrument, price, director, offset, volume);
+	return t->ReqOrderInsert(instrument, price, director, offset, volume);
 }
 
-static void del_order_action(struct mg_connection *conn, Trade* t) {
+static int del_order_action(struct mg_connection *conn, Trade* t) {
 	char instrument[16], _session[16], _frontid[16], orderref[16];
 	int session; int frontid;
 	char post_data[1024];int post_data_len;
+	const char* ct = mg_get_header(conn, "Content-Type");
 	const struct mg_request_info *ri = mg_get_request_info(conn);
 	
 	post_data_len = mg_read(conn, post_data, sizeof(post_data));
-	
-	mg_get_var(post_data, post_data_len, "instrument", instrument, sizeof(instrument));
-	mg_get_var(post_data, post_data_len, "session", _session, sizeof(_session));
-	mg_get_var(post_data, post_data_len, "frontid", _frontid, sizeof(_frontid));
-	mg_get_var(post_data, post_data_len, "orderref", orderref, sizeof(orderref));
-	
-	session = atoi(_session);
-	frontid = atoi(_frontid);
-	
-	t->ReqOrderAction(instrument, session, frontid, orderref);
+	if ( !strcmp(ct, "Application/json")) {
+		cJSON *root = cJSON_Parse(data);
+		const char *instrument = cJSON_GetObjectItem(root, "instrument")->valuestring;
+		const char *session = cJSON_GetObjectItem(root, "session")->valuestring;
+		const int	frontid = cJSON_GetObjectItem(root, "frontid")->valueint;
+		const int	orderref = cJSON_GetObjectItem(root, "orderref")->valueint;
+	} else {
+		mg_get_var(post_data, post_data_len, "instrument", instrument, sizeof(instrument));
+		mg_get_var(post_data, post_data_len, "session", _session, sizeof(_session));
+		mg_get_var(post_data, post_data_len, "frontid", _frontid, sizeof(_frontid));
+		mg_get_var(post_data, post_data_len, "orderref", orderref, sizeof(orderref));
+		session = atoi(_session);
+		frontid = atoi(_frontid);	
+	}
+
+	return t->ReqOrderAction(instrument, session, frontid, orderref);
 }
 
 static const struct ticker_config {
@@ -202,8 +218,8 @@ static const struct ticker_config {
   const char *uri;
   void (*func)(struct mg_connection * , Trade*);
 } ticker_config[] = {
-  {"GET", "/accts", &get_account_info},
-  {"GET", "/position", &get_position_info},
+  {"GET", "/acct", &get_account_info},
+  {"GET", "/pozi", &get_position_info},
   {"POST", "/order", &post_order_insert},
   {"DELETE", "/order", &del_order_action},
   {NULL, NULL, NULL}
@@ -219,34 +235,36 @@ static int ticker_request_handler(struct mg_connection *conn) {
   cJSON *root = NULL;
 //  post_data_len = mg_read(conn, post_data, sizeof(post_data));
   char user[32], pass[32], front[128], broker[32];
+  
+  if (strncmp(request_info->uri, "/api/v1/as/", 10)) return 0;
+  
   sscanf(request_info->uri, "/api/v1/as/%4s/%8s",  broker, user);
   mg_get_var(query_string, strlen(query_string), "front", front, sizeof(front)); 
   mg_get_var(query_string, strlen(query_string), "pass", pass, sizeof(pass)); 
 //  cerr<<"@1"<<post_data<<endl; 
 //  trader = tick_server.create_trader(f, b, u, p);
-  trader = tick_server.find_trader(conn);
+  trader = tick_server.find_trader(user);
   
   if(!trader) {
-	  trader = tick_server.create_trader(conn);
+	  trader = tick_server.create_trader(front, broker, user, pass);
 	  if (!trader) return 0;
   }
   
   trader->isdone = 0;
   memset(trader->buffer, 0, sizeof(trader->buffer));
- 
    
-  while(trader->status < 2) 
+  while(trader->status < 2) {}
   {
 	  for (i = 0; ticker_config[i].uri != NULL; i++) {
-	    if (!slre_match((slre_option)0, request_info->request_method, ticker_config[i].method, sizeof(request_info->request_method)) &&
-	         !slre_match((slre_option)0, request_info->uri, ticker_config[i].uri, sizeof(request_info->uri))) {
+	    if (!strcmp(request_info->request_method, ticker_config[i].method, sizeof(request_info->request_method)) &&
+	         !strncmp(request_info->uri, ticker_config[i].uri, sizeof(request_info->uri))) {
 	      ticker_config[i].func(conn, trader);
 	      break;
 	    }
 	  }
 	  while (!trader->isdone){}
 	 cerr<<"@2"<<endl; 
-	 tick_server.erase(conn);
+//	 tick_server.erase(conn);
 	 
 	  mg_write(conn, trader->buffer, strlen(trader->buffer));
   }
@@ -293,7 +311,7 @@ static int ticker_wb_data_handler(struct mg_connection *conn, int flags,
 	  	get_position_info(conn, t);
 	  	break;
 	  default:
-	  break;
+		break;
   }
   // Copy message from request to reply, applying the mask if required.
   for (i = 0; i < data_len; i++) {
