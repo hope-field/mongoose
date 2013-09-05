@@ -130,23 +130,6 @@ static void test_error(struct mg_connection *conn) {
   mg_printf(conn, "Error: [%d]", status);
 }
 
-static void test_post(struct mg_connection *conn ) {
-  const char *cl;
-  char *buf;
-  int len;
-
-  struct mg_request_info *ri = mg_get_request_info(conn);
-  mg_printf(conn, "%s", standard_reply);
-  if (strcmp(ri->request_method, "POST") == 0 &&
-      (cl = mg_get_header(conn, "Content-Length")) != NULL) {
-    len = atoi(cl);
-    if ((buf = (char*)malloc(len)) != NULL) {
-      mg_write(conn, buf, len);
-      free(buf);
-    }
-  }
-}
-
 static int get_account_info(struct mg_connection *conn, Trade* t) {
 	return t->ReqQryTradingAccount();
 }
@@ -170,7 +153,8 @@ static int post_order_insert(struct mg_connection *conn, Trade *t) {
 		const double	price = cJSON_GetObjectItem(root, "price")->valuedouble;
 		const int	director = cJSON_GetObjectItem(root, "director")->valueint;
 		const int	offset = cJSON_GetObjectItem(root, "offset")->valueint;
-		const int	volume = cJSON_GetObjectItem(root, "volume")->valueint;		
+		const int	volume = cJSON_GetObjectItem(root, "volume")->valueint;	
+			cJSON_Delete(root)
 	} else {
 		mg_get_var(post_data, post_data_len, "instrument", instrument, sizeof(instrument));
 		mg_get_var(post_data, post_data_len, "price", _price, sizeof(_price));
@@ -201,6 +185,7 @@ static int del_order_action(struct mg_connection *conn, Trade* t) {
 		const char *session = cJSON_GetObjectItem(root, "session")->valuestring;
 		const int	frontid = cJSON_GetObjectItem(root, "frontid")->valueint;
 		const int	orderref = cJSON_GetObjectItem(root, "orderref")->valueint;
+		cJSON_Delete(root);
 	} else {
 		mg_get_var(post_data, post_data_len, "instrument", instrument, sizeof(instrument));
 		mg_get_var(post_data, post_data_len, "session", _session, sizeof(_session));
