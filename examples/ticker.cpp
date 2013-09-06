@@ -149,13 +149,13 @@ static int post_order_insert(struct mg_connection *conn, Trade *t) {
 	post_data_len = mg_read(conn, post_data, sizeof(post_data));
 
 	if ( !strcmp(ct, "Application/json")) {
-		cJSON *root = cJSON_Parse(data);
+		cJSON *root = cJSON_Parse(post_data);
 		instrument = cJSON_GetObjectItem(root, "instrument")->valuestring;
 		price = cJSON_GetObjectItem(root, "price")->valuedouble;
 		director = cJSON_GetObjectItem(root, "director")->valueint;
 		offset = cJSON_GetObjectItem(root, "offset")->valueint;
 		volume = cJSON_GetObjectItem(root, "volume")->valueint;	
-		cJSON_Delete(root)
+		cJSON_Delete(root);
 	} else {
 /*		mg_get_var(post_data, post_data_len, "instrument", instrument, sizeof(instrument));
 		mg_get_var(post_data, post_data_len, "price", _price, sizeof(_price));
@@ -179,8 +179,8 @@ static int show_orders(struct mg_connection *conn, Trade* t) {
 }
 
 static int del_order_action(struct mg_connection *conn, Trade* t) {
-	char *instrument[16];
-	int session, frontid, orderref;
+	char *instrument, *orderref;
+	int session, frontid;
 	char post_data[1024];int post_data_len;
 	const char* ct = mg_get_header(conn, "Content-Type");
 	const struct mg_request_info *ri = mg_get_request_info(conn);
@@ -188,11 +188,11 @@ static int del_order_action(struct mg_connection *conn, Trade* t) {
 	post_data_len = mg_read(conn, post_data, sizeof(post_data));
 	
 	if ( !strcmp(ct, "Application/json")) {
-		cJSON *root = cJSON_Parse(data);
+		cJSON *root = cJSON_Parse(post_data);
 		instrument = cJSON_GetObjectItem(root, "instrument")->valuestring;
 		session = cJSON_GetObjectItem(root, "session")->valueint;
 		frontid = cJSON_GetObjectItem(root, "frontid")->valueint;
-		orderref = cJSON_GetObjectItem(root, "orderref")->valueint;
+		orderref = cJSON_GetObjectItem(root, "orderref")->valuestring;
 		cJSON_Delete(root);
 	} else {
 /*		mg_get_var(post_data, post_data_len, "instrument", instrument, sizeof(instrument));
@@ -209,7 +209,7 @@ static int del_order_action(struct mg_connection *conn, Trade* t) {
 static const struct ticker_config {
   const char *method;
   const char *uri;
-  void (*func)(struct mg_connection * , Trade*);
+  int (*func)(struct mg_connection * , Trade*);
 } ticker_config[] = {
   {"GET", "/acct", &get_account_info},
   {"GET", "/positions", &get_position_info},
@@ -251,7 +251,7 @@ static int ticker_request_handler(struct mg_connection *conn) {
   while(trader->status < 2) {}
   {
 	  for (i = 0; ticker_config[i].uri != NULL; i++) {
-	    if (!strcmp(request_info->request_method, ticker_config[i].method, sizeof(request_info->request_method)) &&
+	    if (!strncmp(request_info->request_method, ticker_config[i].method, sizeof(request_info->request_method)) &&
 	         !strncmp(request_info->uri, ticker_config[i].uri, sizeof(request_info->uri))) {
 	      ticker_config[i].func(conn, trader);
 	      break;
@@ -283,7 +283,7 @@ static int ticker_wb_data_handler(struct mg_connection *conn, int flags,
   unsigned char reply[200];
   size_t i;
   const struct mg_request_info *ri = mg_get_request_info(conn);
-  Trade *t = tick_server.find_trader(conn);
+  Trade *t = tick_server.find_trader(ri->uri);
   (void) flags;
 
   // Truncate echoed message, to simplify output code.

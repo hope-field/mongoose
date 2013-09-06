@@ -5,7 +5,7 @@
 #include	<stdlib.h>
 
 #include	"traderproxy.h"
-#include	"ticker.h"
+//#include	"ticker.h"
 
 static	traderproxy	g_ticker;
 
